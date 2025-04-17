@@ -7,6 +7,23 @@ type Lexer struct {
 	processed int
 }
 
+type TokenType int
+
+const (
+	_ TokenType = iota
+	TokenWhitespace
+	TokenEscapeChar
+	TokenQuoteStartChar
+	TokenQuoteEndChar
+	TokenQuotedString
+	TokenString
+	TokenUnknown
+)
+
+type Token struct {
+	Type TokenType
+	Text string
+}
 
 // left は未処理の残り文字列を返す。
 func (l *Lexer) left() string {
@@ -33,10 +50,10 @@ func (l *Lexer) getNextState() lexerState {
 }
 
 // NextToken は現在の状態に応じて次のトークンを切り出して返す。
-func (l *Lexer) NextToken() (string, error) {
+func (l *Lexer) NextToken() (*Token, error) {
 	// すべての文字が処理されていた場合
 	if len(l.left()) == 0 {
-		return "", nil
+		return nil, nil
 	}
 
 	// 状態に応じて適切な処理を実行
@@ -46,7 +63,7 @@ func (l *Lexer) NextToken() (string, error) {
 		return l.NextToken()
 
 	case lexWhitespace:
-		return l.lexWhile(isWhitespace)
+		return l.lexWhile(TokenWhitespace, isWhitespace)
 
 	case lexEscapeChar:
 		return l.lexEscapeChar()
@@ -55,14 +72,14 @@ func (l *Lexer) NextToken() (string, error) {
 		return l.lexQuotedString()
 
 	case lexString:
-		return l.lexWhile(isNormalStringChar)
+		return l.lexWhile(TokenString, isNormalStringChar)
 	}
 
-	return "", nil
+	return nil, nil
 }
 
 // lexWhile は matchFn が true を返す限り文字を読み進め、トークンを切り出す共通処理。
-func (l *Lexer) lexWhile(matchFn func(byte) bool) (string, error) {
+func (l *Lexer) lexWhile(t TokenType, matchFn func(byte) bool) (*Token, error) {
 	remaining := l.left()
 	i := 0
 	for i < len(remaining) && matchFn(remaining[i]) {
@@ -75,11 +92,15 @@ func (l *Lexer) lexWhile(matchFn func(byte) bool) (string, error) {
 
 	// 状態を更新
 	l.state = lexText
-	return token, nil
+	// return token, nil
+	return &Token{
+		Type: t,
+		Text: token,
+	}, nil
 }
 
 // lexEscapeChar はバックスラッシュ文字とその次の文字を読み進める。
-func (l *Lexer) lexEscapeChar() (string, error) {
+func (l *Lexer) lexEscapeChar() (*Token, error) {
 	remaining := l.left()
 	// バックスラッシュとその次の1文字を取得
 	if len(remaining) > 1 {
@@ -87,25 +108,38 @@ func (l *Lexer) lexEscapeChar() (string, error) {
 		// slog.Info("lexEscapeChar", "tok", tok)
 		l.processed += 2
 		l.state = lexText
-		return tok, nil
+		// return tok, nil
+		return &Token{
+			Type: TokenEscapeChar,
+			Text: tok,
+		}, nil
 	}
 
 	// 1文字しかない場合（エスケープの末尾）
 	tok := remaining[:1]
 	l.processed++
 	l.state = lexText
-	return tok, nil
+
+	// return tok, nil
+	return &Token{
+		Type: TokenEscapeChar,
+		Text: tok,
+	}, nil
 }
 
 // lexQuotedString はダブルクォート内の文字列を切り出す
-func (l *Lexer) lexQuotedString() (string, error) {
+func (l *Lexer) lexQuotedString() (*Token, error) {
 	remaining := l.left()
 
 	if remaining[0] == '"' {
 		// 先頭のクォートだけ返す
 		l.processed++
 		l.state = lexQuotedString
-		return `"`, nil
+		// return `"`, nil
+		return &Token{
+			Type: TokenQuotedString,
+			Text: `"`,
+		}, nil
 	}
 
 	// クォーテーションが閉じるまで読み取る
@@ -119,5 +153,9 @@ func (l *Lexer) lexQuotedString() (string, error) {
 
 	// 次は閉じクォートを処理する
 	l.state = lexQuotedString
-	return tok, nil
+	// return tok, nil
+	return &Token{
+		Type: TokenQuotedString,
+		Text: tok,
+	}, nil
 }

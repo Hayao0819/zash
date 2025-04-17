@@ -1,17 +1,17 @@
 package lexer
 
 // 全てのトークンを読んで返す
-func (l *Lexer) ReadAll() ([]string, error) {
-	var tokens []string
+func (l *Lexer) ReadAll() ([]Token, error) {
+	var tokens []Token
 	for {
 		token, err := l.NextToken()
 		if err != nil {
 			return nil, err
 		}
-		if token == "" {
+		if token == nil {
 			break
 		}
-		tokens = append(tokens, token)
+		tokens = append(tokens, *token)
 	}
 	return tokens, nil
 }
