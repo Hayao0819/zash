@@ -1,11 +1,11 @@
-package main
+package utils
 
 import (
 	"fmt"
 	"os"
 )
 
-func handleErr(err error) {
+func HandleErr(err error) {
 	if err == nil {
 		return
 	}
