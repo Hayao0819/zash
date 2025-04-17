@@ -1,15 +1,17 @@
 package lexer
 
-// Implement the io.Reader interface
-func (l *Lexer) Read(p []byte) (n int, err error) {
-	if l.state == lexText {
-		return 0, nil
+// 全てのトークンを読んで返す
+func (l *Lexer) ReadAll() ([]string, error) {
+	var tokens []string
+	for {
+		token, err := l.NextToken()
+		if err != nil {
+			return nil, err
+		}
+		if token == "" {
+			break
+		}
+		tokens = append(tokens, token)
 	}
-	token, err := l.NextToken()
-	if err != nil {
-		return 0, err
-	}
-	n = copy(p, token)
-	l.input = l.input[n:]
-	return n, nil
+	return tokens, nil
 }

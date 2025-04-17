@@ -11,9 +11,12 @@ import (
 func main() {
 	fmt.Println("Welcome to Zash!")
 
-	fmt.Println(lexer.NewLexer("echo \"hello world\"").ReadAll())
+	tokens, _ := lexer.NewLexer("echo \"hello world\"").ReadAll()
+	for _, token := range tokens {
+		fmt.Println("t: (", token,")")
+	}
 
-	s, err := shell.New()
+	_, err := shell.New()
 	utils.HandleErr(err)
-	s.StartInteractive()
+	// s.StartInteractive()
 }
