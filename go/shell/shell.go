@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/Hayao0819/zash/go/lexer"
 	"github.com/mattn/go-tty"
 )
 
@@ -97,10 +98,19 @@ func (s *Shell) StartInteractive() {
 
 	for {
 		input := s.WaitInputWithPrompt()
-		splited := strings.Fields(input)
-		if len(splited) == 0 {
+
+
+		tokens, err := lexer.NewLexer(input).ReadAll()
+		if err != nil {
+			fmt.Println("Err: ", err)
 			continue
 		}
-		s.Exec(splited[0], splited[1:])
+		if len(tokens) == 0 {
+			continue
+		}
+		
+		args:= strings.Split(strings.Join(tokens[1:], ""), " ")
+
+		s.Exec(tokens[0], args)
 	}
 }

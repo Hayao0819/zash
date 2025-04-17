@@ -142,17 +142,22 @@ func (l *Lexer) lexEscapeChar() (string, error) {
 // lexQuotedString はダブルクォート内の文字列を切り出す
 func (l *Lexer) lexQuotedString() (string, error) {
 	remaining := l.left()
+	// 最初のクォーテーションを切り出す
+	if remaining[0] == '"' {
+		l.processed++
+		// クォート自体をトークンとして返す
+		return `"`, nil
+	}
+
 	// クォーテーションが閉じるまで文字を読み進める
-	i := 1
+	i := 0
 	for i < len(remaining) && remaining[i] != '"' {
 		i++
 	}
-	i++ // クォーテーションを含める
 
 	tok := remaining[:i]
-	slog.Info("quotedString", "remaining", remaining)
 	l.processed += i
-
+	
 	l.state = lexText
 	return tok, nil
 }
