@@ -99,7 +99,6 @@ func (s *Shell) StartInteractive() {
 	for {
 		input := s.WaitInputWithPrompt()
 
-
 		tokens, err := lexer.NewLexer(input).ReadAll()
 		if err != nil {
 			fmt.Println("Err: ", err)
@@ -108,8 +107,10 @@ func (s *Shell) StartInteractive() {
 		if len(tokens) == 0 {
 			continue
 		}
-		
-		args:= strings.Split(strings.Join(tokens[1:], ""), " ")
+
+		fmt.Println(strings.Join(tokens, "|"))
+
+		args := strings.Split(strings.Join(tokens[1:], ""), " ")
 
 		s.Exec(tokens[0], args)
 	}
