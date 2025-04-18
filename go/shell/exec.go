@@ -2,7 +2,6 @@ package shell
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"path"
@@ -13,22 +12,13 @@ import (
 	"github.com/Hayao0819/nahi/futils"
 )
 
-func (s *Shell) FindInternalCmd(name string) *InternalCmdFunc {
-	for _, cmd := range s.Internal {
-		if cmd.Name == name {
-			return &cmd
-		}
-	}
-	return nil
-}
-
 func (s *Shell) Exec(argv []string) error {
-	fmt.Println("Exec: ", argv)
+	// fmt.Println("Exec: ", argv)
 	if len(strings.TrimSpace(strings.Join(argv, ""))) == 0 {
 		return nil
 	}
-	if internalCmd := s.FindInternalCmd(argv[0]); internalCmd != nil {
-		return internalCmd.Func(argv[1:])
+	if internalCmd := s.Internal.Get(argv[0]); internalCmd != nil {
+		return s.Internal.Run(argv[0], argv[1:])
 	}
 	// return s.ExecuteCmd(exec.Command(cmd, args...))
 	return s.ExecuteExternalCmd(argv)
@@ -71,7 +61,7 @@ func (s *Shell) ExecuteExternalCmd(argv []string) error {
 		Sys: &syscall.SysProcAttr{},
 	}
 
-	slog.Info("exec", "abs", abs, "argv", argv, "len", len(argv))
+	// slog.Info("exec", "abs", abs, "argv", argv, "len", len(argv))
 
 	// プロセスを開始
 	process, err := os.StartProcess(abs, argv, attr)

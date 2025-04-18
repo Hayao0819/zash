@@ -24,9 +24,9 @@ func (s *Shell) StartInteractive() {
 			continue
 		}
 
-		for _, word := range words {
-			fmt.Println(word)
-		}
+		// for _, word := range words {
+		// 	fmt.Println(word)
+		// }
 
 		if err := s.Exec(words); err != nil {
 			fmt.Println("Err: ", err)

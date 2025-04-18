@@ -1,12 +1,13 @@
 package shell
 
 import (
+	"github.com/Hayao0819/zash/go/shell/scmd"
 	"github.com/mattn/go-tty"
 )
 
 type Shell struct {
 	TTY      *tty.TTY
-	Internal []InternalCmdFunc
+	Internal *scmd.InternalCmds
 	started  bool
 }
 
@@ -16,10 +17,8 @@ func New() (*Shell, error) {
 		return nil, err
 	}
 	return &Shell{
-		TTY: tty,
-		Internal: []InternalCmdFunc{
-			cdCmd,
-			exitCmd,
-		},
+		TTY:      tty,
+		started:  false,
+		Internal: scmd.NewInternalCmds(tty),
 	}, nil
 }
