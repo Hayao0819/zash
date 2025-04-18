@@ -11,11 +11,11 @@ func LineToWords(line string) (word []string, err error) {
 
 	words := []string{}
 	for _, token := range tokens {
-		if token.Type == TokenQuoteStartChar || token.Type == TokenQuoteEndChar {
+		if token.Type == TokenQuoteChar{
 			continue
 		}
 		if token.Type == TokenWhitespace {
-			words = append(words, " ")
+			// words = append(words, " ")
 			continue
 		}
 		if token.Type == TokenEscapeChar {

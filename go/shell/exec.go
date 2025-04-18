@@ -2,6 +2,7 @@ package shell
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path"
@@ -69,6 +70,8 @@ func (s *Shell) ExecuteExternalCmd(argv []string) error {
 		Env: os.Environ(), // 現在の環境変数を継承
 		Sys: &syscall.SysProcAttr{},
 	}
+
+	slog.Info("exec", "abs", abs, "argv", argv, "len", len(argv))
 
 	// プロセスを開始
 	process, err := os.StartProcess(abs, argv, attr)
