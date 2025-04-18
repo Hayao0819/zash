@@ -18,15 +18,10 @@ func (s *Shell) IsInternalCmd(cmd string) bool {
 }
 
 func (s *Shell) Exec(argv []string) error {
-	// fmt.Println("Exec: ", argv)
+
 	if len(strings.TrimSpace(strings.Join(argv, ""))) == 0 {
 		return nil
 	}
-	// if err := s.ExecuteInternalCmd(argv); err != nil {
-	// }
-
-	// // return s.ExecuteCmd(exec.Command(cmd, args...))
-	// return s.ExecuteExternalCmd(argv)
 
 	if s.IsInternalCmd(argv[0]) {
 		return s.ExecuteInternalCmd(argv)
@@ -34,13 +29,6 @@ func (s *Shell) Exec(argv []string) error {
 		return s.ExecuteExternalCmd(argv)
 	}
 }
-
-// func (s *Shell) ExecuteCmd(cmd *exec.Cmd) error {
-// 	cmd.Stdin = s.TTY.Input()
-// 	cmd.Stdout = s.TTY.Output()
-// 	cmd.Stderr = s.TTY.Output()
-// 	return cmd.Run()
-// }
 
 func execTargetAbsPath(fp string) (string, error) {
 	if strings.Contains(fp, string(os.PathSeparator)) {
