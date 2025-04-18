@@ -15,6 +15,7 @@ func NewInternalCmds(tty *tty.TTY) *InternalCmds {
 			cdCmd,
 			exitCmd,
 			pwdCmd,
+			// typeCmd,
 		},
 		TTY: tty,
 	}
