@@ -1,12 +1,14 @@
 package scmd
 
 import (
+	"fmt"
+
 	"github.com/mattn/go-tty"
 )
 
 type InternalCmds struct {
-	Cmds []InternalCmd
-	TTY  *tty.TTY
+	Cmds     []InternalCmd
+	Executer Executer
 }
 
 func NewInternalCmds(tty *tty.TTY) *InternalCmds {
@@ -17,7 +19,9 @@ func NewInternalCmds(tty *tty.TTY) *InternalCmds {
 			pwdCmd,
 			// typeCmd,
 		},
-		TTY: tty,
+		Executer: Executer{
+			TTY: tty,
+		},
 	}
 }
 
@@ -30,10 +34,14 @@ func (ic *InternalCmds) Get(name string) *InternalCmd {
 	return nil
 }
 
-func (ic *InternalCmds) Run(name string, args []string) error {
+func (ic *InternalCmds) Run(name string, args []string) Result {
 	cmd := ic.Get(name)
 	if cmd == nil {
-		return nil
+		return Result{
+			err:      fmt.Errorf("%s: command not found", name),
+			exitcode: 127,
+		}
 	}
-	return cmd.Func(ic.TTY)(args)
+	return cmd.Func(ic.Executer, args)
+
 }

@@ -3,19 +3,20 @@ package scmd
 import (
 	"fmt"
 	"os"
-
-	"github.com/mattn/go-tty"
 )
 
 var exitCmd = InternalCmd{
 	Name: "exit",
-	Func: func(t *tty.TTY) func(args []string) error {
-		return func(args []string) error {
-			if len(args) > 0 {
-				return fmt.Errorf("exit: too many arguments")
+	Func: func(e Executer, args []string) Result {
+		if len(args) > 0 {
+			return Result{
+				err:      fmt.Errorf("exit: too many arguments"),
+				exitcode: 1,
 			}
-			os.Exit(0)
-			return nil
+		}
+		os.Exit(0)
+		return Result{
+			exitcode: 0,
 		}
 	},
 }

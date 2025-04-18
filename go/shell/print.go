@@ -6,12 +6,19 @@ import (
 	"strings"
 )
 
-func (s *Shell) Puts(str string) {
+func (s *Shell) Print(str string) {
 	fmt.Fprintf(s.TTY.Output(), "%s", str)
+}
+func (s *Shell) Println(str string) {
+	fmt.Fprintln(s.TTY.Output(), str)
 }
 
 func (s *Shell) PromptStr() string {
 	promptStr := "Wanya?"
+
+	if s.lastExitCode != 0 {
+		promptStr = fmt.Sprintf("%s [exit %d]", promptStr, s.lastExitCode)
+	}
 
 	currentDir, err := os.Getwd()
 	if err == nil {
@@ -23,7 +30,7 @@ func (s *Shell) PromptStr() string {
 }
 
 func (s *Shell) WaitInputWithPrompt() string {
-	s.Puts(s.PromptStr())
+	s.Print(s.PromptStr())
 	r, _ := s.TTY.ReadString()
 
 	return r

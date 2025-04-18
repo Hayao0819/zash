@@ -12,16 +12,27 @@ import (
 	"github.com/Hayao0819/nahi/futils"
 )
 
+func (s *Shell) IsInternalCmd(cmd string) bool {
+	c := s.Internal.Get(cmd)
+	return c != nil
+}
+
 func (s *Shell) Exec(argv []string) error {
 	// fmt.Println("Exec: ", argv)
 	if len(strings.TrimSpace(strings.Join(argv, ""))) == 0 {
 		return nil
 	}
-	if internalCmd := s.Internal.Get(argv[0]); internalCmd != nil {
-		return s.Internal.Run(argv[0], argv[1:])
+	// if err := s.ExecuteInternalCmd(argv); err != nil {
+	// }
+
+	// // return s.ExecuteCmd(exec.Command(cmd, args...))
+	// return s.ExecuteExternalCmd(argv)
+
+	if s.IsInternalCmd(argv[0]) {
+		return s.ExecuteInternalCmd(argv)
+	} else {
+		return s.ExecuteExternalCmd(argv)
 	}
-	// return s.ExecuteCmd(exec.Command(cmd, args...))
-	return s.ExecuteExternalCmd(argv)
 }
 
 // func (s *Shell) ExecuteCmd(cmd *exec.Cmd) error {
@@ -39,6 +50,13 @@ func execTargetAbsPath(fp string) (string, error) {
 		return filepath.Abs(fp)
 	}
 	return exec.LookPath(fp)
+}
+
+func (s *Shell) ExecuteInternalCmd(argv []string) error {
+	if res := s.Internal.Run(argv[0], argv[1:]); res.Error() != nil {
+		return res.Error()
+	}
+	return nil
 }
 
 func (s *Shell) ExecuteExternalCmd(argv []string) error {
@@ -75,6 +93,7 @@ func (s *Shell) ExecuteExternalCmd(argv []string) error {
 		return err
 	}
 
+	s.lastExitCode = state.ExitCode()
 	if state.Success() {
 		return nil
 	}

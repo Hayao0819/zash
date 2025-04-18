@@ -1,8 +1,6 @@
 package shell
 
 import (
-	"fmt"
-
 	"github.com/Hayao0819/zash/go/lexer"
 )
 
@@ -17,7 +15,8 @@ func (s *Shell) StartInteractive() {
 
 		words, err := lexer.LineToWords(input)
 		if err != nil {
-			fmt.Println("Err: ", err)
+			// fmt.Println("Err: ", err)
+			s.Println(err.Error())
 			continue
 		}
 		if len(words) == 0 {
@@ -29,7 +28,8 @@ func (s *Shell) StartInteractive() {
 		// }
 
 		if err := s.Exec(words); err != nil {
-			fmt.Println("Err: ", err)
+			// fmt.Println("Err: ", err)
+			s.Println(err.Error())
 		}
 	}
 }

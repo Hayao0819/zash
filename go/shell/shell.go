@@ -6,9 +6,10 @@ import (
 )
 
 type Shell struct {
-	TTY      *tty.TTY
-	Internal *scmd.InternalCmds
-	started  bool
+	TTY          *tty.TTY
+	Internal     *scmd.InternalCmds
+	started      bool
+	lastExitCode int
 }
 
 func New() (*Shell, error) {
