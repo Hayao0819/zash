@@ -10,9 +10,23 @@ const (
 	TokenQuotedString
 	TokenString
 	TokenUnknown
+	TokenEOT // End of Text
 )
 
 type Token struct {
 	Type TokenType
 	Text string
+}
+
+func (t Token) String() string {
+	if t.Type == TokenWhitespace {
+		return " "
+	}
+	if t.Type == TokenEOT {
+		return ""
+	}
+	if t.Type == TokenEscapeChar {
+		return t.Text[1:]
+	}
+	return t.Text
 }

@@ -2,6 +2,7 @@ package shell
 
 import (
 	"github.com/Hayao0819/zash/go/lexer"
+	"github.com/Hayao0819/zash/go/parser"
 )
 
 func (s *Shell) StartInteractive() {
@@ -11,23 +12,28 @@ func (s *Shell) StartInteractive() {
 	s.started = true
 
 	for {
-		input := s.WaitInputWithPrompt()
 
-		words, err := lexer.LineToWords(input)
+		tokens, err := lexer.NewLexer(s.WaitInputWithPrompt()).ReadAll()
 		if err != nil {
-			// fmt.Println("Err: ", err)
 			s.Println(err.Error())
 			continue
 		}
-		if len(words) == 0 {
+		if len(tokens) == 0 {
 			continue
 		}
 
-		// for _, word := range words {
-		// 	fmt.Println(word)
-		// }
+		cmd, err := parser.NewParser(tokens).Parse()
+		if err != nil {
+			s.Println(err.Error())
+			continue
+		}
 
-		if err := s.Exec(words); err != nil {
+		argv := []string{cmd.Name}
+		if cmd.CommandSuffix != nil {
+			argv = append(argv, cmd.CommandSuffix.Args...)
+		}
+
+		if err := s.Exec(argv); err != nil {
 			// fmt.Println("Err: ", err)
 			s.Println(err.Error())
 		}

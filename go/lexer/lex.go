@@ -35,7 +35,10 @@ func (l *Lexer) getNextState() lexerState {
 func (l *Lexer) NextToken() (*Token, error) {
 	// すべての文字が処理されていた場合
 	if len(l.left()) == 0 {
-		return nil, nil
+		return &Token{
+			Type: TokenEOT,
+			Text: "",
+		}, nil
 	}
 
 	// slog.Info("NextToken", "state", l.state.Text(), "remaining", l.left())

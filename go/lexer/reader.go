@@ -8,10 +8,11 @@ func (l *Lexer) ReadAll() ([]Token, error) {
 		if err != nil {
 			return nil, err
 		}
-		if token == nil {
+
+		tokens = append(tokens, *token)
+		if token.Type == TokenEOT {
 			break
 		}
-		tokens = append(tokens, *token)
 	}
 	return tokens, nil
 }
