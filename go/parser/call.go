@@ -1,6 +1,9 @@
 package parser
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/Hayao0819/zash/go/ast"
 	"github.com/Hayao0819/zash/go/lexer"
 )
@@ -31,6 +34,10 @@ func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 					break
 				}
 				file += cur.next().String()
+			}
+			// 構文エラー：ファイル名が指定されていない
+			if strings.TrimSpace(file) == "" {
+				return nil, fmt.Errorf("syntax error near unexpected token `%s`: missing file name", op)
 			}
 
 			cmd.CommandSuffix.Redirections = append(cmd.CommandSuffix.Redirections, &ast.Redirection{
