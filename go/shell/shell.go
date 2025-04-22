@@ -24,9 +24,19 @@ func New() (*Shell, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Shell{
+
+	p, err := prompt.New(t)
+	if err != nil {
+		return nil, err
+	}
+
+	s := Shell{
 		TTY:      t,
+		prompt:   p,
 		started:  false,
 		Internal: scmd.NewInternalCmds(t),
-	}, nil
+	}
+
+	s.Println("Welcome to Zash!")
+	return &s, nil
 }
