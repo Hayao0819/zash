@@ -24,6 +24,8 @@ func (l *Lexer) getNextState() lexerState {
 			return lexEscapeChar
 		case '"':
 			return lexQuotedString
+		case '>', '<':
+			return lexRedirection
 		default:
 			return lexString
 		}
@@ -57,7 +59,8 @@ func (l *Lexer) NextToken() (*Token, error) {
 
 	case lexQuotedString:
 		return l.lexQuotedString()
-
+	case lexRedirection:
+		return l.lexWhile(TokenRedirection, isRedirection)
 	case lexString:
 		return l.lexWhile(TokenString, isNormalStringChar)
 	}

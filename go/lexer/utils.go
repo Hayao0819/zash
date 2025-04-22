@@ -19,3 +19,7 @@ func PrintJSON(ts []Token) {
 	}
 	println(string(j))
 }
+
+func isRedirection(b byte) bool {
+	return b == '>' || b == '<'
+}

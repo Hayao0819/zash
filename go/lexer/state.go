@@ -10,6 +10,7 @@ const (
 	lexEscapeChar              // バックスラッシュとその次の1文字を読み取る
 	lexQuotedString            // クォート内の文字列を読み取る
 	lexString                  // 通常の文字列を読み取る
+	lexRedirection             // リダイレクションを読み取る
 )
 
 func (s lexerState) Text() string {
@@ -24,6 +25,8 @@ func (s lexerState) Text() string {
 		return "lexQuotedString"
 	case lexString:
 		return "lexString"
+	case lexRedirection:
+		return "lexRedirection"
 	default:
 		return "unknown state"
 	}

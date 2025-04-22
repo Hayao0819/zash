@@ -8,9 +8,15 @@ type Command struct {
 }
 
 type CommandSuffix struct {
-	Args []string
+	Args         []string
+	Redirections []*Redirection
 }
 
 func (c *Command) JSON() ([]byte, error) {
 	return json.Marshal(c)
+}
+
+type Redirection struct {
+	Operator string // ">", ">>", "<" など
+	File     string // リダイレクト先（ファイル名）
 }

@@ -3,14 +3,15 @@ package lexer
 type TokenType int
 
 const (
-	_ TokenType = iota
-	TokenWhitespace
-	TokenEscapeChar
-	TokenQuoteChar
-	TokenQuotedString
-	TokenString
-	TokenUnknown
-	TokenEOT // End of Text
+	_                 TokenType = iota
+	TokenWhitespace             // " " character
+	TokenEscapeChar             // \ character
+	TokenQuoteChar              // " character
+	TokenQuotedString           // "string"
+	TokenString                 // string
+	TokenRedirection            // > or <
+	TokenUnknown                // unknown token
+	TokenEOT                    // End of Text
 )
 
 type Token struct {
