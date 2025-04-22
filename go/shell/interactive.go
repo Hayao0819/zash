@@ -10,6 +10,7 @@ func (s *Shell) StartInteractive() {
 		return
 	}
 	s.started = true
+	s.Println("Welcome to Zash!")
 
 	for {
 		tokens, err := lexer.NewLexer(s.WaitInputWithPrompt(s.Context())).ReadAll()

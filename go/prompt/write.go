@@ -3,6 +3,7 @@ package prompt
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 )
@@ -13,6 +14,7 @@ func (p *Prompt) String() string {
 
 	// 終了コード
 	if p.exitCode != 0 {
+		slog.Info("exit", "code", p.exitCode)
 		promptStr = fmt.Sprintf("%s [exit %d]", promptStr, p.exitCode)
 	}
 

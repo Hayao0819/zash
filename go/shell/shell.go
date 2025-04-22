@@ -37,6 +37,5 @@ func New() (*Shell, error) {
 		Internal: scmd.NewInternalCmds(t),
 	}
 
-	s.Println("Welcome to Zash!")
 	return &s, nil
 }
