@@ -2,7 +2,6 @@ package shell
 
 import (
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"path"
@@ -82,7 +81,8 @@ func (s *Shell) ExecuteExternalCmd(argv []string) error {
 		return err
 	}
 
-	slog.Info("exit", "code", state.ExitCode(), "success", state.Success())
+	// slog.Info("exit", "code", state.ExitCode(), "success", state.Success())
+	s.prompt.SetExitCode(state.ExitCode())
 	if state.Success() {
 		return nil
 	}
