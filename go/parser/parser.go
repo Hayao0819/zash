@@ -20,55 +20,42 @@ func (p *Parser) Parse() (*ast.Command, error) {
 		return nil, nil
 	}
 
-	var cmd ast.Command
-	i := 0 // トークンの現在位置
-
-	// トークンの取得ヘルパー
-	next := func() lexer.Token {
-		if i >= len(p.tokens) {
-			return lexer.Token{}
-		}
-		tok := p.tokens[i]
-		i++
-		return tok
-	}
+	cur := &cursor{tokens: p.tokens}
+	cmd := &ast.Command{}
 
 	// 1. コマンド名を取得
-	cmd.Name = next().Text
+	cmd.Name = cur.next().Text
 
-	// 2. 引数を取得
-	for i < len(p.tokens) {
-		tok := p.tokens[i]
+	// 2. 引数の処理
+	for cur.hasNext() {
+		tok := cur.peek()
 
-		// 空白とクォート文字はスキップ
+		// 空白やクォート記号はスキップ
 		if tok.Type == lexer.TokenWhitespace || tok.Type == lexer.TokenQuoteChar {
-			i++
+			cur.next()
 			continue
 		}
 
-		// エスケープ文字や通常の文字列を処理
+		// 引数として使えるトークンなら処理
 		if tok.Type == lexer.TokenEscapeChar || tok.Type == lexer.TokenString {
 			arg := ""
-
-			// 連続する文字列トークンを結合
-			for i < len(p.tokens) {
-				t := p.tokens[i]
+			for cur.hasNext() {
+				t := cur.peek()
 				if t.Type != lexer.TokenEscapeChar && t.Type != lexer.TokenString {
 					break
 				}
-				arg += t.String()
-				i++
+				arg += cur.next().String()
 			}
 
-			// 次のトークンが空白またはEOTなら引数を確定
 			if cmd.CommandSuffix == nil {
 				cmd.CommandSuffix = &ast.CommandSuffix{}
 			}
 			cmd.CommandSuffix.Args = append(cmd.CommandSuffix.Args, arg)
 		} else {
-			i++
+			// 予期しないトークンならスキップ
+			cur.next()
 		}
 	}
 
-	return &cmd, nil
+	return cmd, nil
 }
