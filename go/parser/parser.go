@@ -20,56 +20,55 @@ func (p *Parser) Parse() (*ast.Command, error) {
 		return nil, nil
 	}
 
-	processed := 0
-	left := func() []lexer.Token {
-		// return p.tokens[processed:]
-		if processed >= len(p.tokens) {
-			return []lexer.Token{}
-		}
-		return p.tokens[processed:]
-	}
+	var cmd ast.Command
+	i := 0 // トークンの現在位置
+
+	// トークンの取得ヘルパー
 	next := func() lexer.Token {
-		if len(left()) == 0 {
+		if i >= len(p.tokens) {
 			return lexer.Token{}
 		}
-		token := left()[0]
-		processed++
-		return token
-	}
-	// peek は次のトークンを返すが、processedは進めない
-	peek := func() lexer.Token {
-		if len(left()) == 0 {
-			return lexer.Token{}
-		}
-		// fmt.Println("peek", left()[0].Text, "processed", processed)
-		return left()[0]
+		tok := p.tokens[i]
+		i++
+		return tok
 	}
 
 	// 1. コマンド名を取得
-	cmd := &ast.Command{}
 	cmd.Name = next().Text
 
-	// 2. コマンドの引数を取得
-	if len(left()) > 0 {
-		cmd.CommandSuffix = &ast.CommandSuffix{}
-		currentText := ""
-		for _, token := range left() {
-			if token.Type == lexer.TokenWhitespace || token.Type == lexer.TokenQuoteChar {
-				next()
-				continue
-			}
-			if token.Type == lexer.TokenEscapeChar || token.Type == lexer.TokenString {
-				currentText += token.String()
-				processed++
-				if peek().Type == lexer.TokenWhitespace || peek().Type == lexer.TokenEOT {
-					// fmt.Println("append currentText", currentText)
-					cmd.CommandSuffix.Args = append(cmd.CommandSuffix.Args, currentText)
-					currentText = ""
-				}
-			}
+	// 2. 引数を取得
+	for i < len(p.tokens) {
+		tok := p.tokens[i]
+
+		// 空白とクォート文字はスキップ
+		if tok.Type == lexer.TokenWhitespace || tok.Type == lexer.TokenQuoteChar {
+			i++
 			continue
+		}
+
+		// エスケープ文字や通常の文字列を処理
+		if tok.Type == lexer.TokenEscapeChar || tok.Type == lexer.TokenString {
+			arg := ""
+
+			// 連続する文字列トークンを結合
+			for i < len(p.tokens) {
+				t := p.tokens[i]
+				if t.Type != lexer.TokenEscapeChar && t.Type != lexer.TokenString {
+					break
+				}
+				arg += t.String()
+				i++
+			}
+
+			// 次のトークンが空白またはEOTなら引数を確定
+			if cmd.CommandSuffix == nil {
+				cmd.CommandSuffix = &ast.CommandSuffix{}
+			}
+			cmd.CommandSuffix.Args = append(cmd.CommandSuffix.Args, arg)
+		} else {
+			i++
 		}
 	}
 
-	return cmd, nil
+	return &cmd, nil
 }
