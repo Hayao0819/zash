@@ -8,6 +8,7 @@ require (
 	github.com/chzyer/readline v1.5.1
 	github.com/m-mizutani/clog v0.0.8
 	github.com/mattn/go-tty v0.0.7
+	github.com/samber/lo v1.49.1
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/sync v0.13.0
 )
@@ -25,5 +26,5 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 )
