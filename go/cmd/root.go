@@ -21,6 +21,8 @@ func rootCmd() *cobra.Command {
 		SilenceUsage:  true,
 	}
 
+	cmd.AddCommand(runCmd())
+
 	return cmd
 }
 
