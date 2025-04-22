@@ -1,5 +1,7 @@
 package lexer
 
+import "log/slog"
+
 // Lexer は字句解析を行う構造体。状態と解析対象の文字列を保持する。
 type Lexer struct {
 	state     lexerState
@@ -43,7 +45,7 @@ func (l *Lexer) NextToken() (*Token, error) {
 		}, nil
 	}
 
-	// slog.Info("NextToken", "state", l.state.Text(), "remaining", l.left())
+	slog.Debug("NextToken", "state", l.state.Text(), "remaining", l.left())
 
 	// 状態に応じて適切な処理を実行
 	switch l.state {
@@ -95,7 +97,7 @@ func (l *Lexer) lexEscapeChar() (*Token, error) {
 	// バックスラッシュとその次の1文字を取得
 	if len(remaining) > 1 {
 		tok := remaining[:2]
-		// slog.Info("lexEscapeChar", "tok", tok)
+		slog.Debug("lexEscapeChar", "tok", tok)
 		l.processed += 2
 		l.state = lexText
 		// return tok, nil
