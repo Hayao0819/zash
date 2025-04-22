@@ -31,3 +31,7 @@ func (p *Prompt) UpdateCurrentDir() error {
 	p.currentDir = currentDir
 	return nil
 }
+
+func (p *Prompt) SetExitCode(code int) {
+	p.exitCode = code
+}

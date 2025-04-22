@@ -12,8 +12,8 @@ func (p *Prompt) String() string {
 	promptStr := "Wanya?"
 
 	// 終了コード
-	if p.ExitCode != 0 {
-		promptStr = fmt.Sprintf("%s [exit %d]", promptStr, p.ExitCode)
+	if p.exitCode != 0 {
+		promptStr = fmt.Sprintf("%s [exit %d]", promptStr, p.exitCode)
 	}
 
 	// ユーザ名

@@ -81,7 +81,7 @@ func (s *Shell) ExecuteExternalCmd(argv []string) error {
 		return err
 	}
 
-	s.lastExitCode = state.ExitCode()
+	s.prompt.SetExitCode(state.ExitCode())
 	if state.Success() {
 		return nil
 	}
