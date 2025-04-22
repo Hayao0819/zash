@@ -1,5 +1,7 @@
 package lexer
 
+import "encoding/json"
+
 type TokenType int
 
 const (
@@ -13,6 +15,29 @@ const (
 	TokenUnknown                // unknown token
 	TokenEOT                    // End of Text
 )
+
+func (t TokenType) String() string {
+	switch t {
+	case TokenWhitespace:
+		return "Whitespace"
+	case TokenEscapeChar:
+		return "EscapeChar"
+	case TokenQuoteChar:
+		return "QuoteChar"
+	case TokenQuotedString:
+		return "QuotedString"
+	case TokenString:
+		return "String"
+	case TokenRedirection:
+		return "Redirection"
+	case TokenUnknown:
+		return "Unknown"
+	case TokenEOT:
+		return "EOT"
+	default:
+		return "Unknown"
+	}
+}
 
 type Token struct {
 	Type TokenType
@@ -30,4 +55,16 @@ func (t Token) String() string {
 		return t.Text[1:]
 	}
 	return t.Text
+}
+
+func (t *Token) JSON() []byte {
+	tj := struct {
+		Type string `json:"type"`
+		Text string `json:"text,omitempty"`
+	}{
+		Type: t.Type.String(),
+		Text: t.Text,
+	}
+	j, _ := json.Marshal(tj)
+	return j
 }

@@ -45,7 +45,7 @@ func (l *Lexer) NextToken() (*Token, error) {
 		}, nil
 	}
 
-	slog.Debug("NextToken", "state", l.state.Text(), "remaining", l.left())
+	slog.Debug("LexerNextToken", "state", l.state.Text(), "remaining", l.left())
 
 	// 状態に応じて適切な処理を実行
 	switch l.state {
