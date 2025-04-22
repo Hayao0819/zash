@@ -11,14 +11,17 @@ type InternalCmds struct {
 	Executer Executer
 }
 
+var internalCmds = []InternalCmd{}
+
 func NewInternalCmds(tty *tty.TTY) *InternalCmds {
 	return &InternalCmds{
-		Cmds: []InternalCmd{
-			cdCmd,
-			exitCmd,
-			pwdCmd,
-			// typeCmd,
-		},
+		// Cmds: []InternalCmd{
+		// 	cdCmd,
+		// 	exitCmd,
+		// 	pwdCmd,
+		// 	// typeCmd,
+		// },
+		Cmds: internalCmds,
 		Executer: Executer{
 			TTY: tty,
 		},

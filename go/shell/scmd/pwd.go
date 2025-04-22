@@ -34,3 +34,7 @@ var pwdCmd = InternalCmd{
 
 	},
 }
+
+func init() {
+	internalCmds = append(internalCmds, pwdCmd)
+}

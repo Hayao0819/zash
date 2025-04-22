@@ -20,3 +20,7 @@ var exitCmd = InternalCmd{
 		}
 	},
 }
+
+func init() {
+	internalCmds = append(internalCmds, exitCmd)
+}

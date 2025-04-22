@@ -50,3 +50,7 @@ var cdCmd = InternalCmd{
 
 	},
 }
+
+func init() {
+	internalCmds = append(internalCmds, cdCmd)
+}
