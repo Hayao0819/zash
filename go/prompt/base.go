@@ -6,15 +6,17 @@ import (
 )
 
 type Prompt struct {
-	user       string
-	currentDir string
-	exitCode   int
-	tty        *tty.TTY
+	user        string
+	currentDir  string
+	exitCode    int
+	tty         *tty.TTY
+	historyFile string
 }
 
 func New(t *tty.TTY) (*Prompt, error) {
 	p := Prompt{
 		tty: t,
+		// historyFile: "./history.txt",
 	}
 	if err := p.Update(); err != nil {
 		return nil, err
@@ -23,13 +25,28 @@ func New(t *tty.TTY) (*Prompt, error) {
 	return &p, nil
 }
 
-func (p *Prompt) WaitInput() (string, error) {
-	rl, err := readline.NewEx(&readline.Config{
+func (p *Prompt) NewReadLine() (*readline.Instance, error) {
+	c := readline.Config{
 		Prompt: p.String(),
 		Stdin:  p.tty.Input(),
 		Stdout: p.tty.Output(),
 		Stderr: p.tty.Output(),
-	})
+	}
+	if p.historyFile != "" {
+		c.HistoryFile = p.historyFile
+		c.HistoryLimit = 1000
+		c.AutoComplete = nil
+	}
+	rl, err := readline.NewEx(&c)
+	if err != nil {
+		return nil, err
+	}
+
+	return rl, nil
+}
+
+func (p *Prompt) WaitInput() (string, error) {
+	rl, err := p.NewReadLine()
 	if err != nil {
 		return "", err
 	}
@@ -39,6 +56,10 @@ func (p *Prompt) WaitInput() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if err := rl.SaveHistory(line); err != nil {
+		return "", err
+	}
+
 	if line == "" {
 		return "", nil
 	}
