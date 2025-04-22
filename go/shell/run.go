@@ -1,6 +1,8 @@
 package shell
 
 import (
+	"log/slog"
+
 	"github.com/Hayao0819/zash/go/lexer"
 	"github.com/Hayao0819/zash/go/parser"
 )
@@ -18,6 +20,13 @@ func (s *Shell) Run(line string) error {
 	cmd, err := parser.NewParser(tokens).Parse()
 	if err != nil {
 		return err
+	}
+
+	{
+		slog.Debug("parsed command", "name", cmd.Name, "args", cmd.CommandSuffix.Args)
+		for _, r := range cmd.CommandSuffix.Redirections {
+			slog.Debug("redirection", "operator", r.Operator, "file", r.File)
+		}
 	}
 
 	_argv := []string{cmd.Name}
