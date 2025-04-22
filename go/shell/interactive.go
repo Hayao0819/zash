@@ -12,8 +12,7 @@ func (s *Shell) StartInteractive() {
 	s.started = true
 
 	for {
-
-		tokens, err := lexer.NewLexer(s.WaitInputWithPrompt()).ReadAll()
+		tokens, err := lexer.NewLexer(s.WaitInputWithPrompt(s.Context())).ReadAll()
 		if err != nil {
 			s.Println(err.Error())
 			continue

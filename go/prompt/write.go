@@ -1,0 +1,37 @@
+package prompt
+
+import (
+	"fmt"
+	"io"
+	"os"
+	"strings"
+)
+
+func (p *Prompt) String() string {
+	// ベース
+	promptStr := "Wanya?"
+
+	// 終了コード
+	if p.ExitCode != 0 {
+		promptStr = fmt.Sprintf("%s [exit %d]", promptStr, p.ExitCode)
+	}
+
+	// ユーザ名
+	if p.user != "" {
+		promptStr = fmt.Sprintf("%s | %s", promptStr, p.user)
+	}
+
+	// カレントディレクトリ
+	if p.currentDir != "" {
+		show := strings.Replace(p.currentDir, os.Getenv("HOME"), "~", 1)
+		promptStr = fmt.Sprintf("%s | %s", promptStr, show)
+	}
+
+	// 表示
+	promptStr = fmt.Sprintf("%s > ", promptStr)
+	return promptStr
+}
+
+func (p *Prompt) PromptWriter(w io.Writer) (int, error) {
+	return io.WriteString(w, p.String())
+}

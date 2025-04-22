@@ -1,6 +1,8 @@
 package shell
 
 import (
+	"context"
+
 	"github.com/Hayao0819/zash/go/shell/scmd"
 	"github.com/mattn/go-tty"
 )
@@ -12,14 +14,18 @@ type Shell struct {
 	lastExitCode int
 }
 
+func (s *Shell) Context() context.Context {
+	return context.TODO()
+}
+
 func New() (*Shell, error) {
-	tty, err := tty.Open()
+	t, err := tty.Open()
 	if err != nil {
 		return nil, err
 	}
 	return &Shell{
-		TTY:      tty,
+		TTY:      t,
 		started:  false,
-		Internal: scmd.NewInternalCmds(tty),
+		Internal: scmd.NewInternalCmds(t),
 	}, nil
 }
