@@ -12,5 +12,6 @@ func (s *Shell) StartInteractive() {
 		if err := s.Run(i); err != nil {
 			s.Println(err.Error())
 		}
+		s.prompt.Update()
 	}
 }

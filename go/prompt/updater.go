@@ -2,6 +2,7 @@ package prompt
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 
 	"golang.org/x/sync/errgroup"
@@ -19,6 +20,7 @@ func (p *Prompt) UpdateUser() error {
 	if user == "" {
 		return fmt.Errorf("user not found")
 	}
+	slog.Debug("PromptUpdateUser", "user", user)
 	p.user = user
 	return nil
 }
@@ -28,6 +30,7 @@ func (p *Prompt) UpdateCurrentDir() error {
 	if err != nil {
 		return err
 	}
+	slog.Debug("PromptUpdateCurrentDir", "dir", currentDir)
 	p.currentDir = currentDir
 	return nil
 }

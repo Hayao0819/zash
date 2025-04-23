@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 )
 
@@ -12,6 +13,7 @@ var cdCmd = internalCmd{
 	Func: func(args []string, files []*os.File) Result {
 		do := func(dir string) Result {
 			cdLastDir, _ = os.Getwd()
+			slog.Debug("cd", "lastDir", cdLastDir, "to", dir)
 			if err := os.Chdir(dir); err != nil {
 				// return fmt.Errorf("cd: %s", err)
 				return Result{
@@ -27,6 +29,7 @@ var cdCmd = internalCmd{
 
 		if len(args) == 0 {
 			// return os.Chdir(os.Getenv("HOME"))
+
 			return do(os.Getenv("HOME"))
 		} else if len(args) > 1 {
 			// return fmt.Errorf("cd: too many arguments")
