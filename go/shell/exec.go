@@ -40,6 +40,7 @@ func (s *Shell) Exec(cmd *ast.Command) (int, error) {
 		}
 		ex = &executer.RedirectedExecuter{
 			Base: ex,
+			Redirections: cmd.Suffix.Redirections,
 		}
 	}
 
