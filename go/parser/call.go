@@ -45,12 +45,11 @@ func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 				File:     file,
 			})
 
-		case lexer.TokenEscapeChar, lexer.TokenString:
-			// Handle arguments
+		case lexer.TokenEscapeChar, lexer.TokenString, lexer.TokenQuotedString:
 			arg := ""
 			for cur.hasNext() {
 				t := cur.peek()
-				if t.Type != lexer.TokenEscapeChar && t.Type != lexer.TokenString {
+				if t.Type != lexer.TokenEscapeChar && t.Type != lexer.TokenString && t.Type != lexer.TokenQuotedString {
 					break
 				}
 				arg += cur.next().String()
