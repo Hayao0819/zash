@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/Hayao0819/zash/go/prompt"
 	"github.com/Hayao0819/zash/go/shell/builtin"
 	"github.com/mattn/go-tty"
 )
@@ -13,7 +12,6 @@ type InternalExecuter struct {
 	Internal *builtin.InternalCmds
 	Files    []*os.File
 	TTY      *tty.TTY
-	Prompt   *prompt.Prompt
 }
 
 func (ie *InternalExecuter) Exec(argv []string) (int, error) {
@@ -26,7 +24,7 @@ func (ie *InternalExecuter) Exec(argv []string) (int, error) {
 		}
 	}
 	r := ie.Internal.Run(argv[0], argv[1:], ie.Files)
-	ie.Prompt.SetExitCode(r.ExitCode())
+	// ie.Prompt.SetExitCode(r.ExitCode())
 	slog.Debug("internal command", "command", argv[0], "exit code", r.ExitCode())
 	return r.ExitCode(), r.Error()
 }

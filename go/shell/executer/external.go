@@ -6,14 +6,13 @@ import (
 	"syscall"
 
 	"github.com/Hayao0819/nahi/futils"
-	"github.com/Hayao0819/zash/go/prompt"
 	"github.com/mattn/go-tty"
 )
 
 type ExternalExecuter struct {
-	TTY    *tty.TTY
-	Prompt *prompt.Prompt
-	Files  []*os.File
+	TTY *tty.TTY
+	// Prompt *prompt.Prompt
+	Files []*os.File
 }
 
 func (ee *ExternalExecuter) Exec(argv []string) (int, error) {
@@ -54,7 +53,7 @@ func (ee *ExternalExecuter) Exec(argv []string) (int, error) {
 		return 127, err
 	}
 
-	ee.Prompt.SetExitCode(state.ExitCode())
+	// ee.Prompt.SetExitCode(state.ExitCode())
 	if state.Success() {
 		return 0, nil
 	}

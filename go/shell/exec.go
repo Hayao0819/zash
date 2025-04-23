@@ -22,14 +22,16 @@ func (s *Shell) Exec(argv []string) (int, error) {
 		ex = &executer.InternalExecuter{
 			Internal: &builtin.Cmds,
 			TTY:      s.TTY,
-			Prompt:   s.prompt,
+			// Prompt:   s.prompt,
 		}
 	} else {
 		ex = &executer.ExternalExecuter{
-			TTY:    s.TTY,
-			Prompt: s.prompt,
+			TTY: s.TTY,
+			// Prompt: s.prompt,
 		}
 	}
 
-	return ex.Exec(argv)
+	ec, err := ex.Exec(argv)
+	s.prompt.SetExitCode(ec)
+	return ec, err
 }
