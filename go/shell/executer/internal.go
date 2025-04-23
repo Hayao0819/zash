@@ -1,9 +1,14 @@
 package executer
 
-import "github.com/Hayao0819/zash/go/shell/scmd"
+import (
+	"os"
+
+	"github.com/Hayao0819/zash/go/shell/scmd"
+)
 
 type InternalExecuter struct {
 	Internal *scmd.InternalCmds
+	Files    []*os.File
 }
 
 func (ie *InternalExecuter) Exec(argv []string) error {

@@ -13,6 +13,7 @@ import (
 type ExternalExecuter struct {
 	TTY    *tty.TTY
 	Prompt *prompt.Prompt
+	Files  []*os.File
 }
 
 func (ee *ExternalExecuter) Exec(argv []string) error {
@@ -29,14 +30,18 @@ func (ee *ExternalExecuter) Exec(argv []string) error {
 		return fmt.Errorf("%s: No such file or directory", abs)
 	}
 
-	attr := &os.ProcAttr{
-		Files: []*os.File{
+	files := ee.Files
+	if len(files) == 0 {
+		files = []*os.File{
 			ee.TTY.Input(),
 			ee.TTY.Output(),
 			ee.TTY.Output(),
-		},
-		Env: os.Environ(),
-		Sys: &syscall.SysProcAttr{},
+		}
+	}
+	attr := &os.ProcAttr{
+		Files: files,
+		Env:   os.Environ(),
+		Sys:   &syscall.SysProcAttr{},
 	}
 
 	process, err := os.StartProcess(abs, argv, attr)
