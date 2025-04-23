@@ -12,25 +12,18 @@ const (
 	lexString                  // 通常の文字列を読み取る
 	lexRedirection             // リダイレクションを読み取る
 	lexComment                 // コメントを読み取る
+	lexPipe                    // パイプを読み取る
 )
 
 func (s lexerState) Text() string {
-	switch s {
-	case lexText:
-		return "lexText"
-	case lexWhitespace:
-		return "lexWhitespace"
-	case lexEscapeChar:
-		return "lexEscapeChar"
-	case lexQuotedString:
-		return "lexQuotedString"
-	case lexString:
-		return "lexString"
-	case lexRedirection:
-		return "lexRedirection"
-	case lexComment:
-		return "lexComment"
-	default:
-		return "unknown state"
-	}
+	return []string{
+		"lexText",
+		"lexWhitespace",
+		"lexEscapeChar",
+		"lexQuotedString",
+		"lexString",
+		"lexRedirection",
+		"lexComment",
+		"lexPipe",
+	}[s]
 }

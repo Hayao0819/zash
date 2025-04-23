@@ -23,3 +23,7 @@ func PrintJSON(ts []Token) {
 func isRedirection(b byte) bool {
 	return b == '>' || b == '<'
 }
+
+func isPipe(b byte) bool {
+	return b == '|'
+}

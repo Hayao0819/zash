@@ -1,6 +1,8 @@
 package lexer
 
-import "log/slog"
+import (
+	"log/slog"
+)
 
 // Lexer は字句解析を行う構造体。状態と解析対象の文字列を保持する。
 type Lexer struct {
@@ -30,6 +32,8 @@ func (l *Lexer) getNextState() lexerState {
 			return lexRedirection
 		case '#':
 			return lexComment
+		case '|':
+			return lexPipe
 		default:
 			return lexString
 		}
@@ -68,6 +72,8 @@ func (l *Lexer) NextToken() (*Token, error) {
 		return l.lexWhile(TokenRedirection, isRedirection)
 	case lexString:
 		return l.lexWhile(TokenString, isNormalStringChar)
+	case lexPipe:
+		return l.lexWhile(TokenPipe, isPipe)
 	}
 
 	return nil, nil

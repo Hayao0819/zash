@@ -12,34 +12,26 @@ const (
 	TokenQuotedString           // "string"
 	TokenString                 // string
 	TokenRedirection            // > or <
-	TokenComment
-	TokenUnknown // unknown token
-	TokenEOT     // End of Text
+	TokenComment                // # character
+	TokenPipe                   // | character
+	TokenUnknown                // unknown token
+	TokenEOT                    // End of Text
 )
 
 func (t TokenType) String() string {
-	switch t {
-	case TokenWhitespace:
-		return "Whitespace"
-	case TokenEscapeChar:
-		return "EscapeChar"
-	case TokenQuoteChar:
-		return "QuoteChar"
-	case TokenQuotedString:
-		return "QuotedString"
-	case TokenString:
-		return "String"
-	case TokenRedirection:
-		return "Redirection"
-	case TokenUnknown:
-		return "Unknown"
-	case TokenEOT:
-		return "EOT"
-	case TokenComment:
-		return "Comment"
-	default:
-		return "Unknown"
-	}
+	return []string{
+		"Whitespace",
+		"EscapeChar",
+		"QuoteChar",
+		"QuotedString",
+		"String",
+		"Redirection",
+		"Comment",
+		"Pipe",
+		"Unknown",
+		"EOT",
+	}[t]
+
 }
 
 type Token struct {
