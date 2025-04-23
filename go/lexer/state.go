@@ -11,6 +11,7 @@ const (
 	lexQuotedString            // クォート内の文字列を読み取る
 	lexString                  // 通常の文字列を読み取る
 	lexRedirection             // リダイレクションを読み取る
+	lexComment                 // コメントを読み取る
 )
 
 func (s lexerState) Text() string {
@@ -27,6 +28,8 @@ func (s lexerState) Text() string {
 		return "lexString"
 	case lexRedirection:
 		return "lexRedirection"
+	case lexComment:
+		return "lexComment"
 	default:
 		return "unknown state"
 	}

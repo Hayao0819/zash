@@ -12,8 +12,9 @@ const (
 	TokenQuotedString           // "string"
 	TokenString                 // string
 	TokenRedirection            // > or <
-	TokenUnknown                // unknown token
-	TokenEOT                    // End of Text
+	TokenComment
+	TokenUnknown // unknown token
+	TokenEOT     // End of Text
 )
 
 func (t TokenType) String() string {
@@ -34,6 +35,8 @@ func (t TokenType) String() string {
 		return "Unknown"
 	case TokenEOT:
 		return "EOT"
+	case TokenComment:
+		return "Comment"
 	default:
 		return "Unknown"
 	}

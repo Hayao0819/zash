@@ -28,6 +28,8 @@ func (l *Lexer) getNextState() lexerState {
 			return lexQuotedString
 		case '>', '<':
 			return lexRedirection
+		case '#':
+			return lexComment
 		default:
 			return lexString
 		}
@@ -58,7 +60,8 @@ func (l *Lexer) NextToken() (*Token, error) {
 
 	case lexEscapeChar:
 		return l.lexEscapeChar()
-
+	case lexComment:
+		return l.lexComemnt()
 	case lexQuotedString:
 		return l.lexQuotedString()
 	case lexRedirection:
@@ -68,6 +71,25 @@ func (l *Lexer) NextToken() (*Token, error) {
 	}
 
 	return nil, nil
+}
+
+func (l *Lexer) lexComemnt() (*Token, error) {
+	remaining := l.left()
+	i := 0
+	for i < len(remaining) && remaining[i] != '\n' {
+		i++
+	}
+
+	tok := remaining[:i]
+	l.processed += i
+
+	// 状態を更新
+	l.state = lexText
+	// return tok, nil
+	return &Token{
+		Type: TokenComment,
+		Text: tok,
+	}, nil
 }
 
 // lexWhile は matchFn が true を返す限り文字を読み進め、トークンを切り出す共通処理。

@@ -24,11 +24,18 @@ func (s *Shell) Run(line string) error {
 		slog.Debug("ShellGotTokens", "tokens", tj)
 	}
 
-	cmd, err := parser.NewParser(tokens).Parse()
+	st, err := parser.NewParser(tokens).Parse()
 	if err != nil {
 		return err
 	}
+	if st == nil {
+		return nil
+	}
+	if st.Cmd == nil {
+		return nil
+	}
 
+	cmd := st.Cmd
 	{
 		slog.Debug("ShellParsedCommand", "name", cmd.Name, "args", cmd.CommandSuffix.Args)
 		for _, r := range cmd.CommandSuffix.Redirections {
