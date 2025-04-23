@@ -10,8 +10,8 @@ import (
 
 func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 	cmd := &ast.Command{
-		Name:          cur.next().Text,
-		CommandSuffix: &ast.CommandSuffix{},
+		Name:   cur.next().Text,
+		Suffix: &ast.CommandSuffix{},
 	}
 
 	for cur.hasNext() {
@@ -40,7 +40,7 @@ func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 				return nil, fmt.Errorf("syntax error near unexpected token `%s`: missing file name", op)
 			}
 
-			cmd.CommandSuffix.Redirections = append(cmd.CommandSuffix.Redirections, &ast.Redirection{
+			cmd.Suffix.Redirections = append(cmd.Suffix.Redirections, &ast.Redirection{
 				Operator: op,
 				File:     file,
 			})
@@ -54,7 +54,7 @@ func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 				}
 				arg += cur.next().String()
 			}
-			cmd.CommandSuffix.Args = append(cmd.CommandSuffix.Args, arg)
+			cmd.Suffix.Args = append(cmd.Suffix.Args, arg)
 
 		default:
 			cur.next() // skip unexpected

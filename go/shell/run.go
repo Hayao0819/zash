@@ -8,7 +8,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (s *Shell) Run(line string) ( error) {
+func (s *Shell) Run(line string) error {
 
 	tokens, err := lexer.NewLexer(line).ReadAll()
 	if err != nil {
@@ -35,20 +35,7 @@ func (s *Shell) Run(line string) ( error) {
 		return nil
 	}
 
-	cmd := st.Cmd
-	{
-		slog.Debug("ShellParsedCommand", "name", cmd.Name, "args", cmd.CommandSuffix.Args)
-		for _, r := range cmd.CommandSuffix.Redirections {
-			slog.Debug("redirection", "operator", r.Operator, "file", r.File)
-		}
-	}
-
-	_argv := []string{cmd.Name}
-	if cmd.CommandSuffix != nil {
-		_argv = append(_argv, cmd.CommandSuffix.Args...)
-	}
-
-	if _, err := s.Exec(_argv); err != nil {
+	if _, err := s.Exec(st.Cmd); err != nil {
 		return err
 	}
 	return nil

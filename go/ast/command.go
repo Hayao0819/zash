@@ -4,7 +4,7 @@ import "encoding/json"
 
 type Command struct {
 	Name          string
-	CommandSuffix *CommandSuffix
+	Suffix *CommandSuffix
 }
 
 type CommandSuffix struct {
