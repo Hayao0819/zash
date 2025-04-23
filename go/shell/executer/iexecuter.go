@@ -1,5 +1,5 @@
 package executer
 
 type Executer interface {
-	Exec(argv []string) error
+	Exec(argv []string) (int, error)
 }

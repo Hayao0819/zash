@@ -12,9 +12,9 @@ func (s *Shell) IsInternalCmd(cmd string) bool {
 	return builtin.Cmds.Get(cmd) != nil
 }
 
-func (s *Shell) Exec(argv []string) error {
+func (s *Shell) Exec(argv []string) (int, error) {
 	if len(argv) == 0 || strings.TrimSpace(strings.Join(argv, "")) == "" {
-		return nil
+		return 0, nil
 	}
 
 	var ex executer.Executer

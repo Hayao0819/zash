@@ -16,9 +16,9 @@ type InternalExecuter struct {
 	Prompt   *prompt.Prompt
 }
 
-func (ie *InternalExecuter) Exec(argv []string) error {
+func (ie *InternalExecuter) Exec(argv []string) (int, error) {
 	if len(argv) == 0 {
-		return nil
+		return 0, nil
 	}
 	if ie.Files == nil {
 		if ie.TTY != nil {
@@ -28,5 +28,5 @@ func (ie *InternalExecuter) Exec(argv []string) error {
 	r := ie.Internal.Run(argv[0], argv[1:], ie.Files)
 	ie.Prompt.SetExitCode(r.ExitCode())
 	slog.Debug("internal command", "command", argv[0], "exit code", r.ExitCode())
-	return r.Error()
+	return r.ExitCode(), r.Error()
 }

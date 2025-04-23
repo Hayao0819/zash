@@ -8,7 +8,7 @@ import (
 	"github.com/samber/lo"
 )
 
-func (s *Shell) Run(line string) error {
+func (s *Shell) Run(line string) ( error) {
 
 	tokens, err := lexer.NewLexer(line).ReadAll()
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *Shell) Run(line string) error {
 		_argv = append(_argv, cmd.CommandSuffix.Args...)
 	}
 
-	if err := s.Exec(_argv); err != nil {
+	if _, err := s.Exec(_argv); err != nil {
 		return err
 	}
 	return nil

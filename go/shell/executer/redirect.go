@@ -12,7 +12,7 @@ type RedirectedExecuter struct {
 	Redirections []*ast.Redirection
 }
 
-func (r *RedirectedExecuter) Exec(argv []string) error {
+func (r *RedirectedExecuter) Exec(argv []string) (int, error) {
 	// 初期値は現在の TTY
 	files := []*os.File{
 		os.Stdin,  // FD 0
@@ -26,7 +26,7 @@ func (r *RedirectedExecuter) Exec(argv []string) error {
 		case ">":
 			f, err := os.Create(redir.File)
 			if err != nil {
-				return fmt.Errorf("redirect: %s: %w", redir.File, err)
+				return 127, fmt.Errorf("redirect: %s: %w", redir.File, err)
 			}
 			defer f.Close()
 			files[1] = f
@@ -34,7 +34,7 @@ func (r *RedirectedExecuter) Exec(argv []string) error {
 		case "<":
 			f, err := os.Open(redir.File)
 			if err != nil {
-				return fmt.Errorf("redirect: %s: %w", redir.File, err)
+				return 127, fmt.Errorf("redirect: %s: %w", redir.File, err)
 			}
 			defer f.Close()
 			files[0] = f
@@ -52,7 +52,7 @@ func (r *RedirectedExecuter) Exec(argv []string) error {
 	case *InternalExecuter:
 		base.Files = files
 	default:
-		return fmt.Errorf("unsupported executer type: %T", base)
+		return 127, fmt.Errorf("unsupported executer type: %T", base)
 	}
 
 	return r.Base.Exec(argv)
