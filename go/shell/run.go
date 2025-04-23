@@ -24,6 +24,13 @@ func (s *Shell) Run(line string) error {
 		slog.Debug("ShellGotTokens", "tokens", tj)
 	}
 
+	// {
+	// 	// mvdan.cc result
+	// 	f, _ := utils.ParseString(line)
+	// 	j, _ := utils.AstJSON(f)
+	// 	slog.Debug("ShellGotMvdanShAST", "ast", string(j))
+	// }
+
 	st, err := parser.NewParser(tokens).Parse()
 	if err != nil {
 		return err

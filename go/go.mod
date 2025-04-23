@@ -11,6 +11,7 @@ require (
 	github.com/samber/lo v1.49.1
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/sync v0.13.0
+	mvdan.cc/sh/v3 v3.11.0
 )
 
 require (
