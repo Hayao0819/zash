@@ -22,6 +22,7 @@ func (s *Shell) Exec(argv []string) error {
 		ex = &executer.InternalExecuter{
 			Internal: &builtin.Cmds,
 			TTY:      s.TTY,
+			Prompt:   s.prompt,
 		}
 	} else {
 		ex = &executer.ExternalExecuter{
