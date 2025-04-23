@@ -3,12 +3,13 @@ package shell
 import (
 	"strings"
 
+	"github.com/Hayao0819/zash/go/shell/builtin"
 	"github.com/Hayao0819/zash/go/shell/executer"
 )
 
 // IsInternalCmd は指定されたコマンドが内部コマンドかどうかを判定します。
 func (s *Shell) IsInternalCmd(cmd string) bool {
-	return s.Internal.Get(cmd) != nil
+	return builtin.Cmds.Get(cmd) != nil
 }
 
 func (s *Shell) Exec(argv []string) error {
@@ -18,7 +19,10 @@ func (s *Shell) Exec(argv []string) error {
 
 	var ex executer.Executer
 	if s.IsInternalCmd(argv[0]) {
-		ex = &executer.InternalExecuter{Internal: s.Internal}
+		ex = &executer.InternalExecuter{
+			Internal: &builtin.Cmds,
+			TTY:      s.TTY,
+		}
 	} else {
 		ex = &executer.ExternalExecuter{
 			TTY:    s.TTY,

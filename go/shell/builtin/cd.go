@@ -1,4 +1,4 @@
-package scmd
+package builtin
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 
 var cdLastDir string
 
-var cdCmd = InternalCmd{
+var cdCmd = internalCmd{
 	Name: "cd",
-	Func: func(e Executer, args []string) Result {
+	Func: func(args []string, files []*os.File) Result {
 		do := func(dir string) Result {
 			cdLastDir, _ = os.Getwd()
 			if err := os.Chdir(dir); err != nil {
@@ -37,12 +37,13 @@ var cdCmd = InternalCmd{
 		} else if args[0] == "-" {
 			if cdLastDir == "" {
 				// return fmt.Errorf("cd: no previous directory")
+
 				return Result{
 					exitcode: 1,
 					err:      fmt.Errorf("cd: no previous directory"),
 				}
 			}
-
+			fmt.Fprintln(files[1], cdLastDir)
 			return do(cdLastDir)
 		} else {
 			return do(args[0])
@@ -52,5 +53,5 @@ var cdCmd = InternalCmd{
 }
 
 func init() {
-	internalCmds = append(internalCmds, cdCmd)
+	Cmds = append(Cmds, cdCmd)
 }

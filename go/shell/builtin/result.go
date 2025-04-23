@@ -1,4 +1,4 @@
-package scmd
+package builtin
 
 type Result struct {
 	err      error

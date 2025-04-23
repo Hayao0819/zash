@@ -1,13 +1,13 @@
-package scmd
+package builtin
 
 import (
 	"fmt"
 	"os"
 )
 
-var pwdCmd = InternalCmd{
+var pwdCmd = internalCmd{
 	Name: "pwd",
-	Func: func(e Executer, args []string) Result {
+	Func: func(args []string, files []*os.File) Result {
 		if len(args) > 0 {
 			// return fmt.Errorf("exit: too many arguments")
 			return Result{
@@ -25,7 +25,8 @@ var pwdCmd = InternalCmd{
 			}
 		}
 		// fmt.Fprintln(e.TTY.Output(), wd)
-		e.Puts(wd, "\n")
+		// e.Puts(wd, "\n")
+		fmt.Fprintln(files[1], wd)
 
 		return Result{
 			err:      nil,
@@ -36,5 +37,5 @@ var pwdCmd = InternalCmd{
 }
 
 func init() {
-	internalCmds = append(internalCmds, pwdCmd)
+	Cmds = append(Cmds, pwdCmd)
 }

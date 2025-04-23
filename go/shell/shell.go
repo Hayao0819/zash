@@ -4,15 +4,13 @@ import (
 	"context"
 
 	"github.com/Hayao0819/zash/go/prompt"
-	"github.com/Hayao0819/zash/go/shell/scmd"
 	"github.com/mattn/go-tty"
 )
 
 type Shell struct {
-	TTY      *tty.TTY
-	Internal *scmd.InternalCmds
-	started  bool
-	prompt   *prompt.Prompt
+	TTY     *tty.TTY
+	started bool
+	prompt  *prompt.Prompt
 }
 
 func (s *Shell) Context() context.Context {
@@ -31,10 +29,9 @@ func New() (*Shell, error) {
 	}
 
 	s := Shell{
-		TTY:      t,
-		prompt:   p,
-		started:  false,
-		Internal: scmd.NewInternalCmds(t),
+		TTY:     t,
+		prompt:  p,
+		started: false,
 	}
 
 	return &s, nil

@@ -1,13 +1,13 @@
-package scmd
+package builtin
 
 import (
 	"fmt"
 	"os"
 )
 
-var exitCmd = InternalCmd{
+var exitCmd = internalCmd{
 	Name: "exit",
-	Func: func(e Executer, args []string) Result {
+	Func: func(args []string, files []*os.File) Result {
 		if len(args) > 0 {
 			return Result{
 				err:      fmt.Errorf("exit: too many arguments"),
@@ -22,5 +22,5 @@ var exitCmd = InternalCmd{
 }
 
 func init() {
-	internalCmds = append(internalCmds, exitCmd)
+	Cmds = append(Cmds, exitCmd)
 }

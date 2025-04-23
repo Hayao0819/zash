@@ -1,10 +1,15 @@
-package scmd
+package builtin
 
-import cowsay "github.com/Code-Hex/Neo-cowsay/v2"
+import (
+	"fmt"
+	"os"
 
-var cowsayCmd = InternalCmd{
+	cowsay "github.com/Code-Hex/Neo-cowsay/v2"
+)
+
+var cowsayCmd = internalCmd{
 	Name: "cowsay",
-	Func: func(e Executer, args []string) Result {
+	Func: func(args []string, files []*os.File) Result {
 		if len(args) == 0 {
 			return Result{
 				err:      nil,
@@ -20,7 +25,7 @@ var cowsayCmd = InternalCmd{
 			}
 		}
 
-		e.Puts(s)
+		fmt.Fprintln(files[1], s)
 		return Result{
 			err:      nil,
 			exitcode: 0,
@@ -29,5 +34,5 @@ var cowsayCmd = InternalCmd{
 }
 
 func init() {
-	internalCmds = append(internalCmds, cowsayCmd)
+	Cmds = append(Cmds, cowsayCmd)
 }
