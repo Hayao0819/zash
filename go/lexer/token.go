@@ -20,6 +20,7 @@ const (
 
 func (t TokenType) String() string {
 	return []string{
+		"Unknown",
 		"Whitespace",
 		"EscapeChar",
 		"QuoteChar",

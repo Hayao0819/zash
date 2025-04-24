@@ -4,41 +4,17 @@ import (
 	"log/slog"
 )
 
-// Lexer は字句解析を行う構造体。状態と解析対象の文字列を保持する。
-type Lexer struct {
-	state     lexerState
-	input     string
-	processed int
-}
-
-// left は未処理の残り文字列を返す。
-func (l *Lexer) left() string {
-	return l.input[l.processed:]
-}
 
 // GetNextState は次に遷移すべき状態を返す。
-func (l *Lexer) getNextState() lexerState {
-	remaining := l.left()
-	// 未処理の文字列の先頭を確認
-	if len(remaining) > 0 {
-		switch remaining[0] {
-		case ' ':
-			return lexWhitespace
-		case '\\':
-			return lexEscapeChar
-		case '"':
-			return lexQuotedString
-		case '>', '<':
-			return lexRedirection
-		case '#':
-			return lexComment
-		case '|':
-			return lexPipe
-		default:
-			return lexString
+func (l *Lexer) getNextState() state {
+	// 現在の状態に応じて次の状態を決定する
+	for _, s := range states {
+		if s.determineFunc != nil && s.determineFunc(l) {
+			l.state = s
+			return s
 		}
 	}
-	return lexText
+	return lexInitState
 }
 
 // NextToken は現在の状態に応じて次のトークンを切り出して返す。
@@ -51,29 +27,35 @@ func (l *Lexer) NextToken() (*Token, error) {
 		}, nil
 	}
 
-	slog.Debug("LexerNextToken", "state", l.state.Text(), "remaining", l.left())
+	slog.Debug("LexerNextToken", "state", l.state.name, "remaining", l.left())
 
 	// 状態に応じて適切な処理を実行
-	switch l.state {
-	case lexText:
+	switch l.state.name {
+	case lexInitState.name:
 		l.state = l.getNextState()
 		return l.NextToken()
+	default:
+		return l.state.lexFunc(l)
+	}
+}
 
-	case lexWhitespace:
-		return l.lexWhitespace()
-	case lexEscapeChar:
-		return l.lexEscapeChar()
-	case lexComment:
-		return l.lexComemnt()
-	case lexQuotedString:
-		return l.lexQuotedString()
-	case lexRedirection:
-		return l.lexRedirection()
-	case lexString:
-		return l.lexString()
-	case lexPipe:
-		return l.lexPipe()
+// lexWhile は matchFn が true を返す限り文字を読み進め、トークンを切り出す共通処理。
+func (l *Lexer) lexWhile(t TokenType, matchFn func(byte) bool) (*Token, error) {
+	remaining := l.left()
+	i := 0
+	for i < len(remaining) && matchFn(remaining[i]) {
+		i++
 	}
 
-	return nil, nil
+	// トークンを切り出し、残りの入力に更新
+	token := remaining[:i]
+	l.processed += i
+
+	// 状態を更新
+	l.state = lexInitState
+	// return token, nil
+	return &Token{
+		Type: t,
+		Text: token,
+	}, nil
 }
