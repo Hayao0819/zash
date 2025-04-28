@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/Hayao0819/zash/go/ast"
@@ -22,67 +21,81 @@ func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 		switch tok.Type {
 		case lexer.TokenWhitespace, lexer.TokenQuoteChar:
 			cur.next() // skip
+
 		case lexer.TokenRedirection:
-			// Handle redirection
-			op := cur.next().Text
-			for cur.hasNext() && (cur.peek().Type == lexer.TokenWhitespace || cur.peek().Type == lexer.TokenQuoteChar) {
-				cur.next()
+			redir, err := p.parseRedirection(cur)
+			if err != nil {
+				return nil, err
 			}
-
-			file := ""
-
-		CheckNextTokenLoop:
-			for cur.hasNext() {
-				t := cur.peek()
-
-				switch t.Type {
-				case lexer.TokenEscapeChar, lexer.TokenString, lexer.TokenQuotedString:
-					file += cur.next().String()
-				case lexer.TokenAnd:
-					cur.next() // &記号の分
-
-					if nextToAnd := cur.peek(); nextToAnd.Type == lexer.TokenNumber {
-						_, err := strconv.Atoi(nextToAnd.Text)
-						if err != nil {
-							continue
-						}
-
-						// TODO: >&2みたいな数値でのリダイレクトに対応する
-						logmgr.Parser().Warn("Redirecting to FD is not supported yet", "op", op, "file", file)
-
-						cur.next() // >&2の数値の部分
-					}
-				default:
-					break CheckNextTokenLoop
-				}
-			}
-			logmgr.Parser().Info("ParserRedirectFile", "op", op, "file", file)
-
-			// 構文エラー：ファイル名が指定されていない
-			if strings.TrimSpace(file) == "" {
-				return nil, fmt.Errorf("syntax error near unexpected token `%s`: missing file name", op)
-			}
-
-			cmd.Suffix.Redirections = append(cmd.Suffix.Redirections, &ast.Redirection{
-				Operator: op,
-				File:     file,
-			})
+			cmd.Suffix.Redirections = append(cmd.Suffix.Redirections, redir)
 
 		case lexer.TokenEscapeChar, lexer.TokenString, lexer.TokenQuotedString:
-			arg := ""
-			for cur.hasNext() {
-				t := cur.peek()
-				if t.Type != lexer.TokenEscapeChar && t.Type != lexer.TokenString && t.Type != lexer.TokenQuotedString {
-					break
-				}
-				arg += cur.next().String()
-			}
+			arg := p.parseArgument(cur)
 			cmd.Suffix.Args = append(cmd.Suffix.Args, arg)
 
 		default:
-			cur.next() // skip unexpected
+			cur.next() // skip unexpected tokens
 		}
 	}
 
 	return cmd, nil
+}
+
+// parseRedirection parses a redirection (>, >>, <, etc.) and its target
+func (p *Parser) parseRedirection(cur *cursor) (*ast.Redirection, error) {
+	op := cur.next().Text
+
+	// Skip whitespace and quote chars
+	for cur.hasNext() && (cur.peek().Type == lexer.TokenWhitespace || cur.peek().Type == lexer.TokenQuoteChar) {
+		cur.next()
+	}
+
+	file := ""
+
+ParseFileLoop:
+	for cur.hasNext() {
+		t := cur.peek()
+
+		switch t.Type {
+		case lexer.TokenEscapeChar, lexer.TokenString, lexer.TokenQuotedString:
+			file += cur.next().String()
+
+		case lexer.TokenAnd:
+			cur.next() // consume &
+			if cur.hasNext() && cur.peek().Type == lexer.TokenNumber {
+				// Example: >&2
+				logmgr.Parser().Warn("Redirecting to FD is not supported yet", "op", op)
+				cur.next() // consume the number
+			}
+
+		default:
+			break ParseFileLoop
+		}
+	}
+
+	logmgr.Parser().Info("ParserRedirectFile", "op", op, "file", file)
+
+	if strings.TrimSpace(file) == "" {
+		return nil, fmt.Errorf("syntax error near unexpected token `%s`: missing file name", op)
+	}
+
+	return &ast.Redirection{
+		Operator: op,
+		File:     file,
+	}, nil
+}
+
+// parseArgument parses a single argument (could be escaped strings, quoted strings, etc.)
+func (p *Parser) parseArgument(cur *cursor) string {
+	arg := ""
+
+	for cur.hasNext() {
+		t := cur.peek()
+		if t.Type != lexer.TokenEscapeChar && t.Type != lexer.TokenString && t.Type != lexer.TokenQuotedString {
+			break
+		}
+		arg += cur.next().String()
+	}
+
+	return arg
 }
