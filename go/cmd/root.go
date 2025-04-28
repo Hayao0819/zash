@@ -15,9 +15,10 @@ func rootCmd() *cobra.Command {
 		Short: "Zash is a shell written in Go.",
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if optDebug {
-				logmgr.SetDebugLogger()
+				logmgr.EnableLogs()
+				logmgr.Shell().Info("debug mode enabled")
 			} else {
-				logmgr.SetDefaultLogger()
+				logmgr.DisableLogs()
 			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -43,4 +44,3 @@ func rootCmd() *cobra.Command {
 
 	return cmd
 }
-
