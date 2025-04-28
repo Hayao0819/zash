@@ -14,6 +14,7 @@ const (
 	TokenRedirection            // > or <
 	TokenComment                // # character
 	TokenPipe                   // | character
+	TokenAnd                    // & character
 	TokenUnknown                // unknown token
 	TokenEOT                    // End of Text
 )
@@ -29,6 +30,7 @@ func (t TokenType) String() string {
 		"Redirection",
 		"Comment",
 		"Pipe",
+		"And",
 		"Unknown",
 		"EOT",
 	}[t]

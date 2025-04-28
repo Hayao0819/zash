@@ -15,6 +15,7 @@ var states = []state{
 	lexEscapeCharState,
 	lexQuotedStringState,
 	lexRedirectionState,
+	lexAndState,
 	lexCommentState,
 	lexPipeState,
 	lexStringState, // StringStateは最後に追加
@@ -113,6 +114,18 @@ var lexRedirectionState = state{
 	lexFunc: func(l *Lexer) (*Token, error) {
 		return l.lexWhile(TokenRedirection, func(b byte) bool {
 			return b == '>' || b == '<'
+		})
+	},
+}
+
+var lexAndState = state{
+	name: "lexAnd",
+	determineFunc: func(l *Lexer) bool {
+		return l.left()[0] == '&'
+	},
+	lexFunc: func(l *Lexer) (*Token, error) {
+		return l.lexWhile(TokenAnd, func(b byte) bool {
+			return b == '&'
 		})
 	},
 }
