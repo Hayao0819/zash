@@ -1,9 +1,8 @@
 package lexer
 
 import (
-	"log/slog"
+	"github.com/Hayao0819/zash/go/internal/logmgr"
 )
-
 
 // GetNextState は次に遷移すべき状態を返す。
 func (l *Lexer) getNextState() state {
@@ -27,7 +26,7 @@ func (l *Lexer) NextToken() (*Token, error) {
 		}, nil
 	}
 
-	slog.Debug("LexerNextToken", "state", l.state.name, "remaining", l.left())
+	logmgr.Lexer().Info("LexerNextToken", "state", l.state.name, "remaining", l.left())
 
 	// 状態に応じて適切な処理を実行
 	switch l.state.name {
