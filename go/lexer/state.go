@@ -13,12 +13,12 @@ var states = []state{
 	lexInitState,
 	lexWhitespaceState,
 	lexEscapeCharState,
-	lexQuotedStringState,
 	lexRedirectionState,
 	lexAndState,
-	lexCommentState,
 	lexPipeState,
-	lexNumberState,
+	lexQuotedStringState,
+	lexCommentState,
+	lexNumberState, // NumberStateはStringの直前に追加
 	lexStringState, // StringStateは最後に追加
 }
 
