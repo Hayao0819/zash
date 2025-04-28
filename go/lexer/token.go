@@ -11,6 +11,7 @@ const (
 	TokenQuoteChar              // " character
 	TokenQuotedString           // "string"
 	TokenString                 // string
+	TokenNumber                 // 123456
 	TokenRedirection            // > or <
 	TokenComment                // # character
 	TokenPipe                   // | character
@@ -27,6 +28,7 @@ func (t TokenType) String() string {
 		"QuoteChar",
 		"QuotedString",
 		"String",
+		"Number",
 		"Redirection",
 		"Comment",
 		"Pipe",

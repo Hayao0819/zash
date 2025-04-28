@@ -18,6 +18,7 @@ var states = []state{
 	lexAndState,
 	lexCommentState,
 	lexPipeState,
+	lexNumberState,
 	lexStringState, // StringStateは最後に追加
 }
 
@@ -166,6 +167,18 @@ var lexPipeState = state{
 	},
 }
 
+var lexNumberState = state{
+	name: "lexNumber",
+	determineFunc: func(l *Lexer) bool {
+		return l.left()[0] >= '0' && l.left()[0] <= '9'
+	},
+	lexFunc: func(l *Lexer) (*Token, error) {
+		return l.lexWhile(TokenNumber, func(b byte) bool {
+			return b >= '0' && b <= '9'
+		})
+	},
+}
+
 var lexStringState = state{
 	name: "lexString",
 	determineFunc: func(l *Lexer) bool {
@@ -178,14 +191,3 @@ var lexStringState = state{
 		})
 	},
 }
-
-// const (
-// 	lexText                    // 初期状態
-// 	lexWhitespace              // 空白を連続して読み取る
-// 	lexEscapeChar              // バックスラッシュとその次の1文字を読み取る
-// 	lexQuotedString            // クォート内の文字列を読み取る
-// 	lexString                  // 通常の文字列を読み取る
-// 	lexRedirection             // リダイレクションを読み取る
-// 	lexComment                 // コメントを読み取る
-// 	lexPipe                    // パイプを読み取る
-// )
