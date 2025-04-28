@@ -8,7 +8,11 @@ func (s *Shell) StartInteractive() {
 	s.Println("Welcome to Zash!")
 
 	for {
-		i := s.WaitInputWithPrompt(s.Context())
+		i, err := s.prompt.WaitInput()
+		if err != nil {
+			s.Println(err.Error())
+			continue
+		}
 		if err := s.Run(i); err != nil {
 			s.Println(err.Error())
 		}

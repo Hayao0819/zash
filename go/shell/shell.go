@@ -23,7 +23,7 @@ func New() (*Shell, error) {
 		return nil, err
 	}
 
-	p, err := prompt.New(t)
+	p, err := prompt.New(t, "")
 	if err != nil {
 		return nil, err
 	}

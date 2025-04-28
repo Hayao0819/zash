@@ -17,8 +17,6 @@ func rootCmd() *cobra.Command {
 			if optDebug {
 				logmgr.EnableAll()
 				logmgr.Shell().Info("debug mode enabled")
-				// } else {
-				// 	logmgr.DisableLogs()
 			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -30,6 +28,7 @@ func rootCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			
 			s.StartInteractive()
 			return nil
 		},

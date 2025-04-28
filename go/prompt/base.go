@@ -13,7 +13,7 @@ type Prompt struct {
 	historyFile string
 }
 
-func New(t *tty.TTY) (*Prompt, error) {
+func New(t *tty.TTY, historyFile string) (*Prompt, error) {
 	p := Prompt{
 		tty: t,
 		// historyFile: "./history.txt",
