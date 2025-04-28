@@ -28,13 +28,22 @@ func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 			}
 
 			file := ""
+
+		CheckNextTokenLoop:
 			for cur.hasNext() {
 				t := cur.peek()
-				if t.Type != lexer.TokenEscapeChar && t.Type != lexer.TokenString {
-					break
+
+				switch t.Type {
+				case lexer.TokenEscapeChar, lexer.TokenString, lexer.TokenQuotedString:
+					file += cur.next().String()
+				// case lexer.TokenAnd:
+				// if cur.hasNext() {
+
+				default:
+					break CheckNextTokenLoop
 				}
-				file += cur.next().String()
 			}
+
 			// 構文エラー：ファイル名が指定されていない
 			if strings.TrimSpace(file) == "" {
 				return nil, fmt.Errorf("syntax error near unexpected token `%s`: missing file name", op)
