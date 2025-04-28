@@ -1,6 +1,9 @@
 package lexer
 
-import "log/slog"
+import (
+	"errors"
+	"log/slog"
+)
 
 // lexerState は字句解析器の現在の状態を表す列挙型。
 type state struct {
@@ -100,6 +103,9 @@ var lexQuotedStringState = state{
 		l.processed += i
 
 		// 次は閉じクォートを処理する
+		if remaining[0] != '"' {
+			return nil, errors.New("syntax error: unmatched quote")
+		}
 		return &Token{
 			Type: TokenQuotedString,
 			Text: tok,

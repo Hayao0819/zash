@@ -20,6 +20,7 @@ func (l *Lexer) getNextState() state {
 func (l *Lexer) NextToken() (*Token, error) {
 	// すべての文字が処理されていた場合
 	if len(l.left()) == 0 {
+		logmgr.Lexer().Info("LexerParsedAllTokenss")
 		return &Token{
 			Type: TokenEOT,
 			Text: "",
