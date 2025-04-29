@@ -15,8 +15,8 @@ type Prompt struct {
 
 func New(t *tty.TTY, historyFile string) (*Prompt, error) {
 	p := Prompt{
-		tty: t,
-		// historyFile: "./history.txt",
+		tty:         t,
+		historyFile: historyFile,
 	}
 	if err := p.Update(); err != nil {
 		return nil, err
@@ -37,12 +37,7 @@ func (p *Prompt) NewReadLine() (*readline.Instance, error) {
 		c.HistoryLimit = 1000
 		c.AutoComplete = nil
 	}
-	rl, err := readline.NewEx(&c)
-	if err != nil {
-		return nil, err
-	}
-
-	return rl, nil
+	return readline.NewEx(&c)
 }
 
 func (p *Prompt) WaitInput() (string, error) {
