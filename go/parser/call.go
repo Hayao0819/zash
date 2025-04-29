@@ -24,6 +24,7 @@ func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 			cur.next() // skip
 
 		case lexer.TokenRedirection:
+			logmgr.Parser().Debug("ParserFoundRedirection", "op", tok.Text)
 			redir, err := p.parseRedirection(cur)
 			if err != nil {
 				return nil, err

@@ -1,46 +1,51 @@
 package shell
 
 import (
-	"log/slog"
-
 	"github.com/Hayao0819/zash/go/ast"
+	"github.com/Hayao0819/zash/go/internal/logmgr"
 	"github.com/Hayao0819/zash/go/shell/builtin"
 	"github.com/Hayao0819/zash/go/shell/executer"
 )
 
-// IsInternalCmd は指定されたコマンドが内部コマンドかどうかを判定します。
+// 指定されたコマンドが内部コマンドかどうかを判定
 func (s *Shell) IsInternalCmd(cmd string) bool {
 	return builtin.Cmds.Get(cmd) != nil
 }
 
-func (s *Shell) getExecuter(name string) executer.Executer {
-	if s.IsInternalCmd(name) {
-		return &executer.InternalExecuter{
+// 指定されたコマンドに基づいて適切なExecuterを取得
+func (sn *Shell) getExecuter(c *ast.Command) executer.Executer {
+	var ex executer.Executer
+	if sn.IsInternalCmd(c.Name) {
+		ex = &executer.InternalExecuter{
 			Internal: &builtin.Cmds,
-			TTY:      s.TTY,
+			TTY:      sn.TTY,
 		}
 	} else {
-		return &executer.ExternalExecuter{
-			TTY: s.TTY,
+		ex = &executer.ExternalExecuter{
+			TTY: sn.TTY,
 		}
 	}
+
+	if len(c.Suffix.Redirections) != 0 {
+		ex = &executer.RedirectedExecuter{
+			Base:         ex,
+			Redirections: c.Suffix.Redirections,
+		}
+	}
+	return ex
 }
 
 func (s *Shell) Exec(cmd *ast.Command) (int, error) {
 	if cmd == nil || cmd.Name == "" {
 		return 0, nil
 	}
-	ex := s.getExecuter(cmd.Name)
+	ex := s.getExecuter(cmd)
 	if len(cmd.Suffix.Redirections) != 0 {
 		{
-			slog.Debug("ShellParsedCommand", "name", cmd.Name, "args", cmd.Suffix.Args)
+			logmgr.Shell().Debug("ShellParsedCommand", "name", cmd.Name, "args", cmd.Suffix.Args)
 			for _, r := range cmd.Suffix.Redirections {
-				slog.Debug("redirection", "operator", r.Operator, "file", r.File)
+				logmgr.Shell().Debug("ShellExecRedirection", "operator", r.Operator, "file", r.File)
 			}
-		}
-		ex = &executer.RedirectedExecuter{
-			Base: ex,
-			Redirections: cmd.Suffix.Redirections,
 		}
 	}
 
