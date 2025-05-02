@@ -1,5 +1,5 @@
 package executer
 
 type Executer interface {
-	Exec(argv []string) (int, error)
+	Exec(argv []string, ioctx IOContext) (int, error)
 }

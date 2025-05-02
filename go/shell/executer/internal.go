@@ -13,11 +13,11 @@ type InternalExecuter struct {
 	// TTY      *tty.TTY
 }
 
-func (ie *InternalExecuter) Exec(argv []string) (int, error) {
+func (ie *InternalExecuter) Exec(argv []string, ioctx IOContext) (int, error) {
 	if len(argv) == 0 {
 		return 0, nil
 	}
-	r := ie.Internal.Run(argv[0], argv[1:], ie.Files)
+	r := ie.Internal.Run(argv[0], argv[1:], ioctx.Files())
 	// ie.Prompt.SetExitCode(r.ExitCode())
 	slog.Debug("internal command", "command", argv[0], "exit code", r.ExitCode())
 	return r.ExitCode(), r.Error()

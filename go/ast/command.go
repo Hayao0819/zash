@@ -8,6 +8,14 @@ type Command struct {
 	Next   *Command
 }
 
+func (c *Command) Argv() []string {
+	argv := []string{c.Name}
+	if c.Suffix != nil {
+		argv = append(argv, c.Suffix.Args...)
+	}
+	return argv
+}
+
 type CommandSuffix struct {
 	Args         []string
 	Redirections []*Redirection

@@ -3,7 +3,6 @@ package shell
 import (
 	"github.com/Hayao0819/zash/go/ast"
 	"github.com/Hayao0819/zash/go/internal/logmgr"
-	"github.com/Hayao0819/zash/go/internal/utils"
 	"github.com/Hayao0819/zash/go/shell/builtin"
 	"github.com/Hayao0819/zash/go/shell/executer"
 )
@@ -17,45 +16,42 @@ func (s *Shell) IsInternalCmd(cmd string) bool {
 func (sn *Shell) getExecuter(c *ast.Command) executer.Executer {
 	var ex executer.Executer
 	if sn.IsInternalCmd(c.Name) {
-		ex = &executer.InternalExecuter{
-			Internal: &builtin.Cmds,
-			Files:    utils.FilesFromTTY(sn.TTY),
-		}
+		ex = &executer.InternalExecuter{}
 	} else {
-		ex = &executer.ExternalExecuter{
-			Files: utils.FilesFromTTY(sn.TTY),
-		}
+		ex = &executer.ExternalExecuter{}
 	}
 
-	if len(c.Suffix.Redirections) != 0 {
-		ex = &executer.RedirectedExecuter{
-			Base:         ex,
-			Redirections: c.Suffix.Redirections,
-		}
-	}
 	return ex
+}
+
+func (s *Shell) defaultIOContext() executer.IOContext {
+	return executer.IOContext{
+		Stdin:  s.TTY.Input(),
+		Stdout: s.TTY.Output(),
+		Stderr: s.TTY.Output(),
+	}
 }
 
 func (s *Shell) Exec(cmd *ast.Command) (int, error) {
 	if cmd == nil || cmd.Name == "" {
 		return 0, nil
 	}
-	ex := s.getExecuter(cmd)
+
+	ioctx := s.defaultIOContext()
+
+	// --- ここを追加 (リダイレクト適用) ---
 	if len(cmd.Suffix.Redirections) != 0 {
-		{
-			logmgr.Shell().Debug("ShellParsedCommand", "name", cmd.Name, "args", cmd.Suffix.Args)
-			for _, r := range cmd.Suffix.Redirections {
-				logmgr.Shell().Debug("ShellExecRedirection", "operator", r.Operator, "file", r.File)
+		logmgr.Shell().Debug("ShellParsedCommand", "name", cmd.Name, "args", cmd.Suffix.Args)
+		for _, r := range cmd.Suffix.Redirections {
+			logmgr.Shell().Debug("ShellExecRedirection", "operator", r.Operator, "file", r.File)
+			if err := ioctx.Redirect(r.Operator, r.File); err != nil {
+				return 1, err
 			}
 		}
 	}
 
-	argv := []string{cmd.Name}
-	if len(cmd.Suffix.Args) != 0 {
-		argv = append(argv, cmd.Suffix.Args...)
-	}
-
-	ec, err := ex.Exec(argv)
+	ex := s.getExecuter(cmd)
+	ec, err := ex.Exec(cmd.Argv(), ioctx)
 	s.prompt.SetExitCode(ec)
 	return ec, err
 }

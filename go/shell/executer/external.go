@@ -8,11 +8,9 @@ import (
 	"github.com/Hayao0819/nahi/futils"
 )
 
-type ExternalExecuter struct {
-	Files []*os.File
-}
+type ExternalExecuter struct{}
 
-func (ee *ExternalExecuter) Exec(argv []string) (int, error) {
+func (ee *ExternalExecuter) Exec(argv []string, ioctx IOContext) (int, error) {
 	if len(argv) == 0 {
 		return 0, nil
 	}
@@ -27,7 +25,7 @@ func (ee *ExternalExecuter) Exec(argv []string) (int, error) {
 	}
 
 	attr := &os.ProcAttr{
-		Files: ee.Files,
+		Files: ioctx.Files(),
 		Env:   os.Environ(),
 		Sys:   &syscall.SysProcAttr{},
 	}
