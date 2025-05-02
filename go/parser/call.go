@@ -12,7 +12,7 @@ import (
 
 func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 	cmd := &ast.Command{
-		Name:   cur.next().Text,
+		Name:   "",
 		Suffix: &ast.CommandSuffix{},
 	}
 
@@ -32,9 +32,23 @@ func (p *Parser) parseCommandCall(cur *cursor) (*ast.Command, error) {
 			cmd.Suffix.Redirections = append(cmd.Suffix.Redirections, redir)
 
 		case lexer.TokenEscapeChar, lexer.TokenString, lexer.TokenQuotedString:
-			arg := p.parseArgument(cur)
-			cmd.Suffix.Args = append(cmd.Suffix.Args, arg)
-
+			if cmd.Name == "" {
+				cmd.Name = cur.next().String()
+			} else {
+				arg := p.parseArgument(cur)
+				cmd.Suffix.Args = append(cmd.Suffix.Args, arg)
+			}
+		case lexer.TokenPipe:
+			cur.next() // consume pipe
+			if !cur.hasNext() {
+				return nil, fmt.Errorf("syntax error: expected command after pipe")
+			}
+			nextCmd, err := p.parseCommandCall(cur)
+			if err != nil {
+				return nil, err
+			}
+			cmd.Next = nextCmd
+			logmgr.Parser().Debug("ParserFoundPipe", "nextCmd", nextCmd.Name)
 		default:
 			cur.next() // skip unexpected tokens
 		}

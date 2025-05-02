@@ -3,8 +3,9 @@ package ast
 import "encoding/json"
 
 type Command struct {
-	Name          string
+	Name   string
 	Suffix *CommandSuffix
+	Next   *Command
 }
 
 type CommandSuffix struct {
