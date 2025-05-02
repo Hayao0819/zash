@@ -3,6 +3,7 @@ package shell
 import (
 	"github.com/Hayao0819/zash/go/ast"
 	"github.com/Hayao0819/zash/go/internal/logmgr"
+	"github.com/Hayao0819/zash/go/internal/utils"
 	"github.com/Hayao0819/zash/go/shell/builtin"
 	"github.com/Hayao0819/zash/go/shell/executer"
 )
@@ -18,11 +19,11 @@ func (sn *Shell) getExecuter(c *ast.Command) executer.Executer {
 	if sn.IsInternalCmd(c.Name) {
 		ex = &executer.InternalExecuter{
 			Internal: &builtin.Cmds,
-			TTY:      sn.TTY,
+			Files:    utils.FilesFromTTY(sn.TTY),
 		}
 	} else {
 		ex = &executer.ExternalExecuter{
-			TTY: sn.TTY,
+			Files: utils.FilesFromTTY(sn.TTY),
 		}
 	}
 
