@@ -20,9 +20,44 @@ var states = []state{
 	lexAndState,
 	lexPipeState,
 	lexQuotedStringState,
+	lexSingleQuotedStringState,
 	lexCommentState,
 	lexNumberState, // NumberStateはStringの直前に追加
 	lexStringState, // StringStateは最後に追加
+}
+
+// シングルクォート文字列状態
+var lexSingleQuotedStringState = state{
+	name: "lexSingleQuotedString",
+	determineFunc: func(l *Lexer) bool {
+		return l.left()[0] == '\''
+	},
+	lexFunc: func(l *Lexer) (*Token, error) {
+		remaining := l.left()
+		if remaining[0] == '\'' {
+			// 先頭のクォートだけ返す
+			l.processed++
+			return &Token{
+				Type: TokenSingleQuoteChar,
+				Text: "'",
+			}, nil
+		}
+		// クォーテーションが閉じるまで読み取る
+		i := 0
+		for i < len(remaining) && remaining[i] != '\'' {
+			i++
+		}
+		tok := remaining[:i]
+		l.processed += i
+		// 次は閉じクォートを処理する
+		if i >= len(remaining) || remaining[i] != '\'' {
+			return nil, errors.New("syntax error: unmatched single quote")
+		}
+		return &Token{
+			Type: TokenSingleQuotedString,
+			Text: tok,
+		}, nil
+	},
 }
 
 // 初期状態
@@ -187,13 +222,74 @@ var lexNumberState = state{
 
 var lexStringState = state{
 	name: "lexString",
-	determineFunc: func(l *Lexer) bool {
-		// return l.left()[0] != ' ' && l.left()[0] != '\\' && l.left()[0] != '"'
-		return true
-	},
-	lexFunc: func(l *Lexer) (*Token, error) {
-		return l.lexWhile(TokenString, func(b byte) bool {
-			return b != ' ' && b != '\\' && b != '"'
-		})
-	},
+	   determineFunc: func(l *Lexer) bool {
+			   return len(l.left()) > 0 && l.left()[0] != ' '
+	   },
+	   lexFunc: func(l *Lexer) (*Token, error) {
+			   remaining := l.left()
+			   if len(remaining) == 0 {
+					   return nil, nil
+			   }
+			   // 先頭が空白ならTokenWhitespaceを返す
+			   if remaining[0] == ' ' {
+					   l.processed++
+					   return &Token{Type: TokenWhitespace, Text: " "}, nil
+			   }
+			   // 区切り記号を優先的にトークン化
+			   switch remaining[0] {
+			   case ';':
+					   l.processed++
+					   return &Token{Type: TokenSemicolon, Text: ";"}, nil
+			   case '\n':
+					   l.processed++
+					   return &Token{Type: TokenNewline, Text: "\n"}, nil
+			   }
+			   // 1単語を切り出す（区切り記号・空白・バックスラッシュ・ダブルクォートで区切る）
+			   i := 0
+			   for i < len(remaining) && remaining[i] != ' ' && remaining[i] != '\\' && remaining[i] != '"' && remaining[i] != ';' && remaining[i] != '\n' {
+					   i++
+			   }
+			   if i == 0 {
+					   // 1文字も進まなかった場合は1文字だけ消費して返す（無限ループ防止）
+					   l.processed++
+					   return &Token{Type: TokenString, Text: string(remaining[0])}, nil
+			   }
+			   word := remaining[:i]
+			   l.processed += i
+			   // キーワード判定
+			   switch string(word) {
+			   case "if":
+					   return &Token{Type: TokenIf, Text: string(word)}, nil
+			   case "then":
+					   return &Token{Type: TokenThen, Text: string(word)}, nil
+			   case "else":
+					   return &Token{Type: TokenElse, Text: string(word)}, nil
+			   case "elif":
+					   return &Token{Type: TokenElif, Text: string(word)}, nil
+			   case "fi":
+					   return &Token{Type: TokenFi, Text: string(word)}, nil
+			   case "for":
+					   return &Token{Type: TokenFor, Text: string(word)}, nil
+			   case "while":
+					   return &Token{Type: TokenWhile, Text: string(word)}, nil
+			   case "until":
+					   return &Token{Type: TokenUntil, Text: string(word)}, nil
+			   case "do":
+					   return &Token{Type: TokenDo, Text: string(word)}, nil
+			   case "done":
+					   return &Token{Type: TokenDone, Text: string(word)}, nil
+			   case "case":
+					   return &Token{Type: TokenCase, Text: string(word)}, nil
+			   case "esac":
+					   return &Token{Type: TokenEsac, Text: string(word)}, nil
+			   case "select":
+					   return &Token{Type: TokenSelect, Text: string(word)}, nil
+			   case "in":
+					   return &Token{Type: TokenIn, Text: string(word)}, nil
+			   case "function":
+					   return &Token{Type: TokenFunction, Text: string(word)}, nil
+			   default:
+					   return &Token{Type: TokenString, Text: string(word)}, nil
+			   }
+	   },
 }

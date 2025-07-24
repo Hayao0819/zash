@@ -5,28 +5,58 @@ import "encoding/json"
 type TokenType int
 
 const (
-	_                 TokenType = iota
-	TokenWhitespace             // " " character
-	TokenEscapeChar             // \ character
-	TokenQuoteChar              // " character
-	TokenQuotedString           // "string"
-	TokenString                 // string
-	TokenNumber                 // 123456
-	TokenRedirection            // > or <
-	TokenComment                // # character
-	TokenPipe                   // | character
-	TokenAnd                    // & character
-	TokenUnknown                // unknown token
-	TokenEOT                    // End of Text
+	_                       TokenType = iota
+	TokenWhitespace                   // " " character
+	TokenEscapeChar                   // \\ character
+	TokenQuoteChar                    // " character
+	TokenQuotedString                 // "string"
+	TokenSingleQuoteChar              // ' character
+	TokenSingleQuotedString           // 'string'
+	TokenString                       // string
+	TokenNumber                       // 123456
+	TokenRedirection                  // > or <
+	TokenComment                      // # character
+	TokenPipe                         // | character
+	TokenAnd                          // & character
+	TokenUnknown                      // unknown token
+	TokenEOT                          // End of Text
+
+	// --- BNFに必要なキーワード・記号トークン ---
+	TokenIf
+	TokenThen
+	TokenElse
+	TokenElif
+	TokenFi
+	TokenFor
+	TokenWhile
+	TokenUntil
+	TokenDo
+	TokenDone
+	TokenCase
+	TokenEsac
+	TokenSelect
+	TokenIn
+	TokenFunction
+	TokenLBrace    // {
+	TokenRBrace    // }
+	TokenLParen    // (
+	TokenRParen    // )
+	TokenSemicolon // ;
+	TokenNewline   // \n
+	TokenAssign    // =
+	TokenBang      // !
+	TokenWord      // bare word (identifier, not keyword)
 )
 
 func (t TokenType) String() string {
-	return []string{
-		"Unknown",
+	names := []string{
+		"_",
 		"Whitespace",
 		"EscapeChar",
 		"QuoteChar",
 		"QuotedString",
+		"SingleQuoteChar",
+		"SingleQuotedString",
 		"String",
 		"Number",
 		"Redirection",
@@ -35,8 +65,36 @@ func (t TokenType) String() string {
 		"And",
 		"Unknown",
 		"EOT",
-	}[t]
-
+		// --- BNF tokens ---
+		"If",
+		"Then",
+		"Else",
+		"Elif",
+		"Fi",
+		"For",
+		"While",
+		"Until",
+		"Do",
+		"Done",
+		"Case",
+		"Esac",
+		"Select",
+		"In",
+		"Function",
+		"LBrace",
+		"RBrace",
+		"LParen",
+		"RParen",
+		"Semicolon",
+		"Newline",
+		"Assign",
+		"Bang",
+		"Word",
+	}
+	if int(t) < len(names) {
+		return names[t]
+	}
+	return "UnknownTokenType"
 }
 
 type Token struct {

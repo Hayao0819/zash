@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/Hayao0819/nahi/cobrautils"
 	"github.com/Hayao0819/zash/go/internal/logmgr"
 	"github.com/Hayao0819/zash/go/shell"
 	"github.com/spf13/cobra"
@@ -21,14 +20,16 @@ func rootCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if optCmdStr != "" {
-				return cobrautils.CallCmd(cmd, *runCmd(), optCmdStr)
+				rc := runCmd()
+				rc.SetArgs([]string{optCmdStr})
+				return rc.Execute()
 			}
 
 			s, err := shell.New()
 			if err != nil {
 				return err
 			}
-			
+
 			s.StartInteractive()
 			return nil
 		},

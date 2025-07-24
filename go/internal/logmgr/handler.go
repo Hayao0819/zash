@@ -21,7 +21,5 @@ func (l *Loggers) Set(category string) {
 	(*l)[category] = categorizedColorLogger(category)
 }
 func (l *Loggers) Disable(category string) {
-	if _, ok := (*l)[category]; ok {
-		delete(*l, category)
-	}
+	delete(*l, category)
 }
