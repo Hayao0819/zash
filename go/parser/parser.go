@@ -34,7 +34,7 @@ func (p *Parser) Parse() (ast.Node, error) {
 	script.List = node
 	logmgr.Parser().Debug("Parse: end")
 	// デバッグ有効時にASTを視覚的に出力
-	if logmgr.Parser() != nil {
+	if logmgr.IsEnabled("parser") {
 		// インデントを維持したままstderrに出力
 		fmt.Fprintln(os.Stderr, "===== AST tree =====")
 		fmt.Fprint(os.Stderr, String(script))

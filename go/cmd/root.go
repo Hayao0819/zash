@@ -10,8 +10,9 @@ func rootCmd() *cobra.Command {
 	var optCmdStr string
 	var optDebug bool
 	cmd := &cobra.Command{
-		Use:   "zash",
+		Use:   "zash [script_file]",
 		Short: "Zash is a shell written in Go.",
+		Args:  cobra.MaximumNArgs(1),
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			if optDebug {
 				logmgr.EnableAll()
@@ -23,6 +24,15 @@ func rootCmd() *cobra.Command {
 				rc := runCmd()
 				rc.SetArgs([]string{optCmdStr})
 				return rc.Execute()
+			}
+
+			// ファイル引数がある場合はスクリプトファイルとして実行
+			if len(args) > 0 {
+				s, err := shell.New()
+				if err != nil {
+					return err
+				}
+				return s.RunFile(args[0])
 			}
 
 			s, err := shell.New()

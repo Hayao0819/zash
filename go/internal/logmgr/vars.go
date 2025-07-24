@@ -33,6 +33,15 @@ func EnableAll() {
 	}
 }
 
+// IsEnabled returns true if the specified category is enabled
+func IsEnabled(category string) bool {
+	if defaultLoggers == nil {
+		return false
+	}
+	_, ok := defaultLoggers[category]
+	return ok
+}
+
 var Shell = func() *slog.Logger { return defaultLoggers.Get("shell") }
 var Lexer = func() *slog.Logger { return defaultLoggers.Get("lexer") }
 var Parser = func() *slog.Logger { return defaultLoggers.Get("parser") }
