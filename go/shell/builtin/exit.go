@@ -1,22 +1,22 @@
 package builtin
 
 import (
-	"fmt"
 	"os"
+	"strconv"
 )
 
 var exitCmd = internalCmd{
 	Name: "exit",
 	Func: func(args []string, files []*os.File) Result {
-		if len(args) > 0 {
-			return Result{
-				err:      fmt.Errorf("exit: too many arguments"),
-				exitcode: 1,
+		exitCode := 0
+		if len(args) > 1 {
+			if code, err := strconv.Atoi(args[1]); err == nil {
+				exitCode = code
 			}
 		}
-		os.Exit(0)
+		os.Exit(exitCode)
 		return Result{
-			exitcode: 0,
+			exitcode: exitCode,
 		}
 	},
 }

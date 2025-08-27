@@ -64,7 +64,7 @@ func (s *Shell) ExecNode(node ast.Node) (int, error) {
 			for {
 				logmgr.Shell().Debug("ShellExecWhileCommand", "condition", wc.Cond)
 				cond, _ := s.ExecNode(wc.Cond)
-				if cond != 0 {
+				if cond != 0 { // 条件が偽（非0）の場合にループを終了
 					break
 				}
 				last, _ = s.ExecNode(wc.Body)

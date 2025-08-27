@@ -38,6 +38,6 @@ func (s *Shell) RunFile(filename string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	return s.Run(string(content))
 }

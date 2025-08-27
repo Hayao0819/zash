@@ -248,6 +248,9 @@ func (p *Parser) parseSimpleCommand() (ast.Node, error) {
 				wordBuf = ""
 			}
 			p.next()
+		case lexer.TokenAnd:
+			// バックグラウンド実行記号(&)は無視
+			p.next()
 		default:
 			if wordBuf != "" {
 				trimmed := strings.TrimSpace(wordBuf)

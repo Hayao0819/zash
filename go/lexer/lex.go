@@ -58,7 +58,7 @@ func (l *Lexer) lexWhile(t TokenType, matchFn func(byte) bool) (*Token, error) {
 	logmgr.Lexer().Debug("lexWhile: token extracted", "token", token, "length", i)
 	l.processed += i
 
-	// 状態を更新
+	// 状態を初期状態にリセット
 	l.state = lexInitState
 	logmgr.Lexer().Debug("lexWhile: state reset to init")
 	return &Token{

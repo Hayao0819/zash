@@ -90,7 +90,6 @@ var lexEscapeCharState = state{
 			slog.Debug("lexEscapeChar", "tok", tok)
 			l.processed += 2
 			l.state = lexInitState
-			// return tok, nil
 			return &Token{
 				Type: TokenEscapeChar,
 				Text: tok,
@@ -102,7 +101,6 @@ var lexEscapeCharState = state{
 		l.processed++
 		l.state = lexInitState
 
-		// return tok, nil
 		return &Token{
 			Type: TokenEscapeChar,
 			Text: tok,
@@ -121,7 +119,6 @@ var lexQuotedStringState = state{
 		if remaining[0] == '"' {
 			// 先頭のクォートだけ返す
 			l.processed++
-			// l.state = lexQuotedStringState
 			return &Token{
 				Type: TokenQuoteChar,
 				Text: `"`,
@@ -180,6 +177,7 @@ var lexCommentState = state{
 	lexFunc: func(l *Lexer) (*Token, error) {
 		remaining := l.left()
 		i := 0
+		// コメント行（改行まで）を読む
 		for i < len(remaining) && remaining[i] != '\n' {
 			i++
 		}
@@ -187,7 +185,7 @@ var lexCommentState = state{
 		tok := remaining[:i]
 		l.processed += i
 
-		// 状態を更新
+		// 状態を初期状態にリセット
 		l.state = lexInitState
 		return &Token{
 			Type: TokenComment,
@@ -222,74 +220,74 @@ var lexNumberState = state{
 
 var lexStringState = state{
 	name: "lexString",
-	   determineFunc: func(l *Lexer) bool {
-			   return len(l.left()) > 0 && l.left()[0] != ' '
-	   },
-	   lexFunc: func(l *Lexer) (*Token, error) {
-			   remaining := l.left()
-			   if len(remaining) == 0 {
-					   return nil, nil
-			   }
-			   // 先頭が空白ならTokenWhitespaceを返す
-			   if remaining[0] == ' ' {
-					   l.processed++
-					   return &Token{Type: TokenWhitespace, Text: " "}, nil
-			   }
-			   // 区切り記号を優先的にトークン化
-			   switch remaining[0] {
-			   case ';':
-					   l.processed++
-					   return &Token{Type: TokenSemicolon, Text: ";"}, nil
-			   case '\n':
-					   l.processed++
-					   return &Token{Type: TokenNewline, Text: "\n"}, nil
-			   }
-			   // 1単語を切り出す（区切り記号・空白・バックスラッシュ・ダブルクォートで区切る）
-			   i := 0
-			   for i < len(remaining) && remaining[i] != ' ' && remaining[i] != '\\' && remaining[i] != '"' && remaining[i] != ';' && remaining[i] != '\n' {
-					   i++
-			   }
-			   if i == 0 {
-					   // 1文字も進まなかった場合は1文字だけ消費して返す（無限ループ防止）
-					   l.processed++
-					   return &Token{Type: TokenString, Text: string(remaining[0])}, nil
-			   }
-			   word := remaining[:i]
-			   l.processed += i
-			   // キーワード判定
-			   switch string(word) {
-			   case "if":
-					   return &Token{Type: TokenIf, Text: string(word)}, nil
-			   case "then":
-					   return &Token{Type: TokenThen, Text: string(word)}, nil
-			   case "else":
-					   return &Token{Type: TokenElse, Text: string(word)}, nil
-			   case "elif":
-					   return &Token{Type: TokenElif, Text: string(word)}, nil
-			   case "fi":
-					   return &Token{Type: TokenFi, Text: string(word)}, nil
-			   case "for":
-					   return &Token{Type: TokenFor, Text: string(word)}, nil
-			   case "while":
-					   return &Token{Type: TokenWhile, Text: string(word)}, nil
-			   case "until":
-					   return &Token{Type: TokenUntil, Text: string(word)}, nil
-			   case "do":
-					   return &Token{Type: TokenDo, Text: string(word)}, nil
-			   case "done":
-					   return &Token{Type: TokenDone, Text: string(word)}, nil
-			   case "case":
-					   return &Token{Type: TokenCase, Text: string(word)}, nil
-			   case "esac":
-					   return &Token{Type: TokenEsac, Text: string(word)}, nil
-			   case "select":
-					   return &Token{Type: TokenSelect, Text: string(word)}, nil
-			   case "in":
-					   return &Token{Type: TokenIn, Text: string(word)}, nil
-			   case "function":
-					   return &Token{Type: TokenFunction, Text: string(word)}, nil
-			   default:
-					   return &Token{Type: TokenString, Text: string(word)}, nil
-			   }
-	   },
+	determineFunc: func(l *Lexer) bool {
+		return len(l.left()) > 0 && l.left()[0] != ' '
+	},
+	lexFunc: func(l *Lexer) (*Token, error) {
+		remaining := l.left()
+		if len(remaining) == 0 {
+			return nil, nil
+		}
+		// 先頭が空白ならTokenWhitespaceを返す
+		if remaining[0] == ' ' {
+			l.processed++
+			return &Token{Type: TokenWhitespace, Text: " "}, nil
+		}
+		// 区切り記号を優先的にトークン化
+		switch remaining[0] {
+		case ';':
+			l.processed++
+			return &Token{Type: TokenSemicolon, Text: ";"}, nil
+		case '\n':
+			l.processed++
+			return &Token{Type: TokenNewline, Text: "\n"}, nil
+		}
+		// 1単語を切り出す（区切り記号・空白・バックスラッシュ・ダブルクォートで区切る）
+		i := 0
+		for i < len(remaining) && remaining[i] != ' ' && remaining[i] != '\\' && remaining[i] != '"' && remaining[i] != ';' && remaining[i] != '\n' {
+			i++
+		}
+		if i == 0 {
+			// 1文字も進まなかった場合は1文字だけ消費して返す（無限ループ防止）
+			l.processed++
+			return &Token{Type: TokenString, Text: string(remaining[0])}, nil
+		}
+		word := remaining[:i]
+		l.processed += i
+		// キーワード判定
+		switch string(word) {
+		case "if":
+			return &Token{Type: TokenIf, Text: string(word)}, nil
+		case "then":
+			return &Token{Type: TokenThen, Text: string(word)}, nil
+		case "else":
+			return &Token{Type: TokenElse, Text: string(word)}, nil
+		case "elif":
+			return &Token{Type: TokenElif, Text: string(word)}, nil
+		case "fi":
+			return &Token{Type: TokenFi, Text: string(word)}, nil
+		case "for":
+			return &Token{Type: TokenFor, Text: string(word)}, nil
+		case "while":
+			return &Token{Type: TokenWhile, Text: string(word)}, nil
+		case "until":
+			return &Token{Type: TokenUntil, Text: string(word)}, nil
+		case "do":
+			return &Token{Type: TokenDo, Text: string(word)}, nil
+		case "done":
+			return &Token{Type: TokenDone, Text: string(word)}, nil
+		case "case":
+			return &Token{Type: TokenCase, Text: string(word)}, nil
+		case "esac":
+			return &Token{Type: TokenEsac, Text: string(word)}, nil
+		case "select":
+			return &Token{Type: TokenSelect, Text: string(word)}, nil
+		case "in":
+			return &Token{Type: TokenIn, Text: string(word)}, nil
+		case "function":
+			return &Token{Type: TokenFunction, Text: string(word)}, nil
+		default:
+			return &Token{Type: TokenString, Text: string(word)}, nil
+		}
+	},
 }
