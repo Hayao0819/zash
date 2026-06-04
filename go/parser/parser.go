@@ -96,9 +96,10 @@ func (p *Parser) parseList() (ast.Node, error) {
 			logmgr.Parser().Debug("parseList: no more pipeline node")
 			break
 		}
-		// 改行やセミコロンで区切る
+		// 改行やセミコロン、&&、||で区切る
 		tok := p.peek()
-		if tok.Type == lexer.TokenNewline || tok.Type == lexer.TokenSemicolon {
+		if tok.Type == lexer.TokenNewline || tok.Type == lexer.TokenSemicolon ||
+			tok.Type == lexer.TokenAnd || tok.Type == lexer.TokenOr {
 			logmgr.Parser().Debug("parseList: skip separator", "tok", lexer.TokenType(tok.Type).String())
 			p.next()
 			continue
@@ -238,7 +239,20 @@ func (p *Parser) parseSimpleCommand() (ast.Node, error) {
 				wordBuf = ""
 			}
 			logmgr.Parser().Debug("parseSimpleCommand: redirection", "text", tok.Text)
-			elements = append(elements, &ast.Redirection{Operator: p.next().Text})
+			op := p.next().Text
+			// 空白をスキップ
+			for p.peek().Type == lexer.TokenWhitespace {
+				p.next()
+			}
+			// ターゲットを読み取る
+			var target *ast.Word
+			ttok := p.peek()
+			if ttok.Type == lexer.TokenString || ttok.Type == lexer.TokenWord || ttok.Type == lexer.TokenQuotedString || ttok.Type == lexer.TokenSingleQuotedString || ttok.Type == lexer.TokenNumber {
+				target = &ast.Word{Value: p.next().Text}
+			} else {
+				return nil, fmt.Errorf("syntax error: expected filename after redirection operator '%s'", op)
+			}
+			elements = append(elements, &ast.Redirection{Operator: op, Target: target})
 		case lexer.TokenWhitespace:
 			if wordBuf != "" {
 				trimmed := strings.TrimSpace(wordBuf)
@@ -248,7 +262,7 @@ func (p *Parser) parseSimpleCommand() (ast.Node, error) {
 				wordBuf = ""
 			}
 			p.next()
-		case lexer.TokenAnd:
+		case lexer.TokenBackground:
 			// バックグラウンド実行記号(&)は無視
 			p.next()
 		default:
@@ -270,13 +284,22 @@ func (p *Parser) parseIfCommand() (ast.Node, error) {
 	// if <compound_list> then <compound_list> [else <compound_list>] fi
 	logmgr.Parser().Debug("parseIfCommand: start")
 	p.next() // 'if'
-	cond, _ := p.parseList()
+	cond, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenThen)
-	thenPart, _ := p.parseList()
+	thenPart, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	var elsePart ast.Node
 	if p.peek().Type == lexer.TokenElse {
 		p.next()
-		elsePart, _ = p.parseList()
+		elsePart, err = p.parseList()
+		if err != nil {
+			return nil, err
+		}
 	}
 	p.expect(lexer.TokenFi)
 	logmgr.Parser().Debug("parseIfCommand: end")
@@ -302,7 +325,10 @@ func (p *Parser) parseForCommand() (ast.Node, error) {
 		}
 	}
 	p.expect(lexer.TokenDo)
-	body, _ := p.parseList()
+	body, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenDone)
 	logmgr.Parser().Debug("parseForCommand: end")
 	return &ast.ShellCommand{
@@ -318,9 +344,15 @@ func (p *Parser) parseForCommand() (ast.Node, error) {
 func (p *Parser) parseWhileCommand() (ast.Node, error) {
 	logmgr.Parser().Debug("parseWhileCommand: start")
 	p.next() // 'while'
-	cond, _ := p.parseList()
+	cond, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenDo)
-	body, _ := p.parseList()
+	body, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenDone)
 	logmgr.Parser().Debug("parseWhileCommand: end")
 	return &ast.ShellCommand{
@@ -335,9 +367,15 @@ func (p *Parser) parseWhileCommand() (ast.Node, error) {
 func (p *Parser) parseUntilCommand() (ast.Node, error) {
 	logmgr.Parser().Debug("parseUntilCommand: start")
 	p.next() // 'until'
-	cond, _ := p.parseList()
+	cond, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenDo)
-	body, _ := p.parseList()
+	body, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenDone)
 	logmgr.Parser().Debug("parseUntilCommand: end")
 	return &ast.ShellCommand{
@@ -380,7 +418,10 @@ func (p *Parser) parseSelectCommand() (ast.Node, error) {
 		}
 	}
 	p.expect(lexer.TokenDo)
-	body, _ := p.parseList()
+	body, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenDone)
 	logmgr.Parser().Debug("parseSelectCommand: end")
 	return &ast.ShellCommand{
@@ -396,7 +437,10 @@ func (p *Parser) parseSelectCommand() (ast.Node, error) {
 func (p *Parser) parseSubshell() (ast.Node, error) {
 	logmgr.Parser().Debug("parseSubshell: start")
 	p.next() // '('
-	body, _ := p.parseList()
+	body, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenRParen)
 	logmgr.Parser().Debug("parseSubshell: end")
 	return &ast.Subshell{Body: body}, nil
@@ -405,7 +449,10 @@ func (p *Parser) parseSubshell() (ast.Node, error) {
 func (p *Parser) parseGroupCommand() (ast.Node, error) {
 	logmgr.Parser().Debug("parseGroupCommand: start")
 	p.next() // '{'
-	body, _ := p.parseList()
+	body, err := p.parseList()
+	if err != nil {
+		return nil, err
+	}
 	p.expect(lexer.TokenRBrace)
 	logmgr.Parser().Debug("parseGroupCommand: end")
 	return &ast.GroupCommand{Body: body}, nil

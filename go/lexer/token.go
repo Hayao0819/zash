@@ -8,16 +8,16 @@ const (
 	_                       TokenType = iota
 	TokenWhitespace                   // " " character
 	TokenEscapeChar                   // \\ character
-	TokenQuoteChar                    // " character
 	TokenQuotedString                 // "string"
-	TokenSingleQuoteChar              // ' character
 	TokenSingleQuotedString           // 'string'
 	TokenString                       // string
 	TokenNumber                       // 123456
 	TokenRedirection                  // > or <
 	TokenComment                      // # character
 	TokenPipe                         // | character
-	TokenAnd                          // & character
+	TokenAnd                          // && operator
+	TokenBackground                   // & operator (single)
+	TokenOr                           // || operator
 	TokenUnknown                      // unknown token
 	TokenEOT                          // End of Text
 
@@ -53,9 +53,7 @@ func (t TokenType) String() string {
 		"_",
 		"Whitespace",
 		"EscapeChar",
-		"QuoteChar",
 		"QuotedString",
-		"SingleQuoteChar",
 		"SingleQuotedString",
 		"String",
 		"Number",
@@ -63,6 +61,8 @@ func (t TokenType) String() string {
 		"Comment",
 		"Pipe",
 		"And",
+		"Background",
+		"Or",
 		"Unknown",
 		"EOT",
 		// --- BNF tokens ---

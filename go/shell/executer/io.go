@@ -51,6 +51,13 @@ func (io *IOContext) Redirect(op, file string) error {
 	return nil
 }
 
+func (io *IOContext) Close() {
+	for _, f := range io.closers {
+		f.Close()
+	}
+	io.closers = nil
+}
+
 func (io *IOContext) PipeTo(next *IOContext) error {
 	r, w, err := os.Pipe()
 	if err != nil {

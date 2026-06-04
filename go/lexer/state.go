@@ -34,25 +34,21 @@ var lexSingleQuotedStringState = state{
 	},
 	lexFunc: func(l *Lexer) (*Token, error) {
 		remaining := l.left()
-		if remaining[0] == '\'' {
-			// 先頭のクォートだけ返す
-			l.processed++
-			return &Token{
-				Type: TokenSingleQuoteChar,
-				Text: "'",
-			}, nil
-		}
+		// 開きクォートをスキップ
+		i := 1
 		// クォーテーションが閉じるまで読み取る
-		i := 0
 		for i < len(remaining) && remaining[i] != '\'' {
 			i++
 		}
-		tok := remaining[:i]
-		l.processed += i
-		// 次は閉じクォートを処理する
-		if i >= len(remaining) || remaining[i] != '\'' {
+		if i >= len(remaining) {
 			return nil, errors.New("syntax error: unmatched single quote")
 		}
+		// 閉じクォートもスキップ
+		i++
+		// クォート内の内容（クォート自体を除く）を返す
+		tok := remaining[1 : i-1]
+		l.processed += i
+		l.state = lexInitState
 		return &Token{
 			Type: TokenSingleQuotedString,
 			Text: tok,
@@ -68,11 +64,11 @@ var lexInitState = state{
 var lexWhitespaceState = state{
 	name: "lexWhitespace",
 	determineFunc: func(l *Lexer) bool {
-		return l.left()[0] == ' '
+		return l.left()[0] == ' ' || l.left()[0] == '\t'
 	},
 	lexFunc: func(l *Lexer) (*Token, error) {
 		return l.lexWhile(TokenWhitespace, func(b byte) bool {
-			return b == ' '
+			return b == ' ' || b == '\t'
 		})
 	},
 }
@@ -115,29 +111,28 @@ var lexQuotedStringState = state{
 	},
 	lexFunc: func(l *Lexer) (*Token, error) {
 		remaining := l.left()
-
-		if remaining[0] == '"' {
-			// 先頭のクォートだけ返す
-			l.processed++
-			return &Token{
-				Type: TokenQuoteChar,
-				Text: `"`,
-			}, nil
-		}
-
-		// クォーテーションが閉じるまで読み取る
-		i := 0
-		for i < len(remaining) && remaining[i] != '"' {
+		// 開きクォートをスキップ
+		i := 1
+		// クォーテーションが閉じるまで読み取る（エスケープ対応）
+		for i < len(remaining) {
+			if remaining[i] == '\\' && i+1 < len(remaining) {
+				i += 2 // エスケープ文字をスキップ
+				continue
+			}
+			if remaining[i] == '"' {
+				break
+			}
 			i++
 		}
-
-		tok := remaining[:i]
-		l.processed += i
-
-		// 次は閉じクォートを処理する
-		if remaining[0] != '"' {
+		if i >= len(remaining) {
 			return nil, errors.New("syntax error: unmatched quote")
 		}
+		// 閉じクォートもスキップ
+		i++
+		// クォート内の内容（クォート自体を除く）を返す
+		tok := remaining[1 : i-1]
+		l.processed += i
+		l.state = lexInitState
 		return &Token{
 			Type: TokenQuotedString,
 			Text: tok,
@@ -163,9 +158,15 @@ var lexAndState = state{
 		return l.left()[0] == '&'
 	},
 	lexFunc: func(l *Lexer) (*Token, error) {
-		return l.lexWhile(TokenAnd, func(b byte) bool {
-			return b == '&'
-		})
+		remaining := l.left()
+		if len(remaining) >= 2 && remaining[1] == '&' {
+			l.processed += 2
+			l.state = lexInitState
+			return &Token{Type: TokenAnd, Text: "&&"}, nil
+		}
+		l.processed++
+		l.state = lexInitState
+		return &Token{Type: TokenBackground, Text: "&"}, nil
 	},
 }
 
@@ -200,9 +201,15 @@ var lexPipeState = state{
 		return l.left()[0] == '|'
 	},
 	lexFunc: func(l *Lexer) (*Token, error) {
-		return l.lexWhile(TokenPipe, func(b byte) bool {
-			return b == '|'
-		})
+		remaining := l.left()
+		if len(remaining) >= 2 && remaining[1] == '|' {
+			l.processed += 2
+			l.state = lexInitState
+			return &Token{Type: TokenOr, Text: "||"}, nil
+		}
+		l.processed++
+		l.state = lexInitState
+		return &Token{Type: TokenPipe, Text: "|"}, nil
 	},
 }
 
@@ -221,39 +228,70 @@ var lexNumberState = state{
 var lexStringState = state{
 	name: "lexString",
 	determineFunc: func(l *Lexer) bool {
-		return len(l.left()) > 0 && l.left()[0] != ' '
+		c := l.left()[0]
+		return len(l.left()) > 0 && c != ' ' && c != '\t'
 	},
 	lexFunc: func(l *Lexer) (*Token, error) {
 		remaining := l.left()
 		if len(remaining) == 0 {
 			return nil, nil
 		}
-		// 先頭が空白ならTokenWhitespaceを返す
-		if remaining[0] == ' ' {
-			l.processed++
-			return &Token{Type: TokenWhitespace, Text: " "}, nil
-		}
 		// 区切り記号を優先的にトークン化
 		switch remaining[0] {
 		case ';':
 			l.processed++
+			l.state = lexInitState
 			return &Token{Type: TokenSemicolon, Text: ";"}, nil
 		case '\n':
 			l.processed++
+			l.state = lexInitState
 			return &Token{Type: TokenNewline, Text: "\n"}, nil
+		case '{':
+			l.processed++
+			l.state = lexInitState
+			return &Token{Type: TokenLBrace, Text: "{"}, nil
+		case '}':
+			l.processed++
+			l.state = lexInitState
+			return &Token{Type: TokenRBrace, Text: "}"}, nil
+		case '(':
+			l.processed++
+			l.state = lexInitState
+			return &Token{Type: TokenLParen, Text: "("}, nil
+		case ')':
+			l.processed++
+			l.state = lexInitState
+			return &Token{Type: TokenRParen, Text: ")"}, nil
+		case '!':
+			l.processed++
+			l.state = lexInitState
+			return &Token{Type: TokenBang, Text: "!"}, nil
+		case '=':
+			l.processed++
+			l.state = lexInitState
+			return &Token{Type: TokenAssign, Text: "="}, nil
 		}
-		// 1単語を切り出す（区切り記号・空白・バックスラッシュ・ダブルクォートで区切る）
+		// 1単語を切り出す（区切り記号・空白・バックスラッシュ・クォートで区切る）
 		i := 0
-		for i < len(remaining) && remaining[i] != ' ' && remaining[i] != '\\' && remaining[i] != '"' && remaining[i] != ';' && remaining[i] != '\n' {
+		for i < len(remaining) {
+			c := remaining[i]
+			if c == ' ' || c == '\t' || c == '\\' || c == '"' || c == '\'' ||
+				c == ';' || c == '\n' || c == '=' || c == '{' || c == '}' ||
+				c == '(' || c == ')' || c == '!' || c == '|' || c == '&' ||
+				c == '>' || c == '<' || c == '#' {
+				break
+			}
 			i++
 		}
 		if i == 0 {
 			// 1文字も進まなかった場合は1文字だけ消費して返す（無限ループ防止）
 			l.processed++
+			l.state = lexInitState
 			return &Token{Type: TokenString, Text: string(remaining[0])}, nil
 		}
 		word := remaining[:i]
 		l.processed += i
+		l.state = lexInitState
 		// キーワード判定
 		switch string(word) {
 		case "if":
